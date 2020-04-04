@@ -25,26 +25,34 @@
               <v-list-item-title>Venda</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
-
         </v-list-group>
         <!-- end Caixa -->
 
-        <!-- Estoque -->
+        <!-- Produtos -->
         <v-list-group prepend-icon="mdi-package" no-action>
           <template v-slot:activator>
             <v-list-item-content>
-              <v-list-item-title>Estoque</v-list-item-title>
+              <v-list-item-title>Produtos</v-list-item-title>
             </v-list-item-content>
           </template>
 
-          <v-list-item link to="/estoque">
+          <v-list-item link to="/itens">
             <v-list-item-content>
               <v-list-item-title>Itens</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
-
+          <v-list-item link to="/categorias">
+            <v-list-item-content>
+              <v-list-item-title>Categorias</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item link to="/fornecedores">
+            <v-list-item-content>
+              <v-list-item-title>Fornecedores</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
         </v-list-group>
-        <!-- end Estoque -->
+        <!-- end Produtos -->
 
         <!-- Relatórios -->
         <v-list-item link to="/relatorios">

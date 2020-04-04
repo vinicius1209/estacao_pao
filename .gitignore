@@ -5,6 +5,7 @@ node_modules
 backend/__pycache__/
 *.py[cod]
 backend/venv
+backend/migrations
 pip-log.txt
 pip-delete-this-directory.txt
 
