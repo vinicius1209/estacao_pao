@@ -1,18 +1,52 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
+  <v-container fluid grid-list-md>
+    <!-- Cards informativos -->
+    <v-layout row wrap>
+     
+    </v-layout>
+    <!-- END -->
+  </v-container>
 </template>
 
 <script>
-// @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
-
 export default {
-  name: 'Home',
-  components: {
-    HelloWorld
-  }
-}
+  name: "Home",
+  data: () => ({
+    cards: [
+      {
+        title: "SmartX",
+        subtitle: "Usuários",
+        qtd: 32,
+        icon: "mdi-account-multiple",
+        color: "indigo darken-4"
+      },
+      {
+        title: "Educacional",
+        subtitle: "Instituições",
+        qtd: 687,
+        icon: "mdi-alpha-e-box",
+        color: "purple darken-4"
+      },
+      {
+        title: "Escalabilidade",
+        subtitle: "Vendas",
+        qtd: 58,
+        icon: "mdi-cart",
+        color: "teal darken-1"
+      },
+      {
+        title: "Mensagens",
+        subtitle: "Total",
+        qtd: 17,
+        icon: "mdi-message",
+        color: "teal darken-4"
+      }
+    ]
+  })
+};
 </script>
+<style scoped>
+.v-card{
+  cursor: pointer;
+}
+</style>
