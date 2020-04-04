@@ -1,12 +1,32 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import { isLoged } from '../auth.js'
+import Login from '../views/Login.vue'
 import Home from '../views/Home.vue'
 
 Vue.use(VueRouter)
 
 const routes = [
   {
-    path: '/',
+    path: '/login',
+    name: 'Login',
+    component: Login,
+    meta: {
+      title: 'Login',
+      metaTags: [
+        {
+          name: 'description',
+          content: 'The Login page of Panificadora.'
+        },
+        {
+          property: 'og:description',
+          content: 'The Login page of Panificadora.'
+        }
+      ]
+    }
+  },
+  {
+    path: '/dashboard',
     name: 'Home',
     component: Home,
     meta: {
@@ -33,40 +53,42 @@ const router = new VueRouter({
 
 
 router.beforeEach((to, from, next) => {
-  // This goes through the matched routes from last to first, finding the closest route with a title.
-  // eg. if we have /some/deep/nested/route and /some, /deep, and /nested have titles, nested's will be chosen.
-  const nearestWithTitle = to.matched.slice().reverse().find(r => r.meta && r.meta.title);
 
-  // Find the nearest route element with meta tags.
-  const nearestWithMeta = to.matched.slice().reverse().find(r => r.meta && r.meta.metaTags);
+  if (to.path != '/login' && to.path != '/register' && to.path != '/auth') {
+    if (isLoged()) {
 
-  // If a route with a title was found, set the document (page) title to that value.
-  if (nearestWithTitle) document.title = nearestWithTitle.meta.title;
+      const nearestWithTitle = to.matched.slice().reverse().find(r => r.meta && r.meta.title);
+      const nearestWithMeta = to.matched.slice().reverse().find(r => r.meta && r.meta.metaTags);
 
-  // Remove any stale meta tags from the document using the key attribute we set below.
-  Array.from(document.querySelectorAll('[data-vue-router-controlled]')).map(el => el.parentNode.removeChild(el));
+      if (nearestWithTitle) document.title = nearestWithTitle.meta.title;
 
-  // Skip rendering meta tags if there are none.
-  if (!nearestWithMeta) return next();
+      Array.from(document.querySelectorAll('[data-vue-router-controlled]')).map(el => el.parentNode.removeChild(el));
 
-  // Turn the meta tag definitions into actual elements in the head.
-  nearestWithMeta.meta.metaTags.map(tagDef => {
-    const tag = document.createElement('meta');
+      if (!nearestWithMeta) return next();
 
-    Object.keys(tagDef).forEach(key => {
-      tag.setAttribute(key, tagDef[key]);
-    });
+      nearestWithMeta.meta.metaTags.map(tagDef => {
+        const tag = document.createElement('meta');
 
-    // We use this to track which meta tags we create, so we don't interfere with other ones.
-    tag.setAttribute('data-vue-router-controlled', '');
+        Object.keys(tagDef).forEach(key => {
+          tag.setAttribute(key, tagDef[key]);
+        });
 
-    return tag;
-  })
-    // Add the meta tags to the document head.
-    .forEach(tag => document.head.appendChild(tag));
+        tag.setAttribute('data-vue-router-controlled', '');
 
-  next();
+        return tag;
+      }).forEach(tag => document.head.appendChild(tag));
+
+      next();
+    } else {
+      router.push('/login');
+    }
+  }
+  else if (to.path == '/login' || to.path == '/register' || to.path == '/auth') {
+    next();
+  }
+  else {
+    router.push('/login');
+  }
 });
-
 
 export default router

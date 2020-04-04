@@ -1,9 +1,9 @@
 <template>
   <div id="menu">
-    <v-navigation-drawer v-model="drawer" app dark clipped>
+    <v-navigation-drawer v-model="drawer" app clipped>
       <v-list dense>
         <!-- Dashboard -->
-        <v-list-item link to="/">
+        <v-list-item link to="/dashboard">
           <v-list-item-action>
             <v-icon>mdi-view-dashboard</v-icon>
           </v-list-item-action>
@@ -68,7 +68,7 @@
     </v-navigation-drawer>
 
     <!-- Top Bar -->
-    <v-app-bar app clipped-left dark>
+    <v-app-bar app clipped-left dark :value="menu_top">
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
 
       <v-toolbar-title>Pães e Variedades</v-toolbar-title>
@@ -100,12 +100,22 @@
 </template>
 
 <script>
+
+import { isLoged } from '../auth.js'
+
 export default {
   name: "Menu",
   data: () => ({
-    drawer: null,
+    drawer: false,
+    menu_top: false,
     logout: false
   }),
+  mounted: function () {
+    if(isLoged()){
+      this.drawer = true;
+      this.menu_top = true;
+    }
+  },
   methods: {
     doLogout() {
       this.$root.$children[0].$refs.notification.makeNotification(
