@@ -1,0 +1,212 @@
+<template>
+  <v-container fluid grid-list-md>
+    <v-layout row wrap>
+      <v-flex lg12 md12 xs12>
+        <v-data-table :headers="headers" :items="produtos" class="elevation-1">
+          <template v-slot:top>
+            <v-toolbar flat>
+              <v-toolbar-title>Produtos - Itens</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+                <v-btn text @click="dialog = true">Novo</v-btn>
+              </v-toolbar-items>
+              <!--Dialogo de inserção / edição -->
+              <v-dialog v-model="dialog" max-width="640px" persistent>
+                <v-form v-model="validRegistro" ref="formRegistro">
+                  <v-card>
+                    <v-card-title>
+                      <span class="headline">{{ formTitle }}</span>
+                    </v-card-title>
+                    <v-card-text>
+                      <v-container>
+                        <v-row>
+                          <v-col cols="12" sm="12" md="12">
+                            <v-text-field
+                              v-model="editedItem.descricao"
+                              label="Descrição"
+                              :rules="regras.descricao"
+                              :counter="120"
+                              required
+                              clearable
+                            >
+                              <v-icon slot="prepend" color="green">mdi-account-outline</v-icon>
+                            </v-text-field>
+                          </v-col>
+                          <v-col cols="12" sm="12" md="12">
+                            <v-text-field
+                              v-model="editedItem.unidade_medida"
+                              label="Unidade Medida"
+                              :rules="regras.unidade_medida"
+                              required
+                              clearable
+                            >
+                              <v-icon slot="prepend" color="green">mdi-email</v-icon>
+                            </v-text-field>
+                          </v-col>
+                          <v-col cols="12" sm="6" md="6">
+                            <v-text-field
+                              v-model="editedItem.preco"
+                              label="Preço"
+                              :rules="regras.preco"
+                              required
+                              clearable
+                            >
+                              <v-icon slot="prepend" color="green">mdi-lock-outline</v-icon>
+                            </v-text-field>
+                          </v-col>
+                        </v-row>
+                      </v-container>
+                    </v-card-text>
+
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn color="red" text @click="close">Cancelar</v-btn>
+                      <v-btn color="green" text @click="close">Salvar</v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-form>
+              </v-dialog>
+            </v-toolbar>
+          </template>
+          <template v-slot:item.status="{ item }">
+            {{ item.ativado == true ? 'Ativado' : 'Desativado' }}
+          </template>
+          <template v-slot:item.acoes="{ item }">
+            <v-icon
+              small
+              class="mr-2"
+              @click="changeStatus(item)"
+            >{{ item.status === true ? 'mdi-account-cancel' : 'mdi-account-check'}}</v-icon>
+            <v-icon small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
+            <v-icon small @click="callDeleteItem(item)">mdi-delete</v-icon>
+          </template>
+        </v-data-table>
+      </v-flex>
+
+      <!-- Dialogo de remoção -->
+      <v-dialog v-model="dialog_del" persistent max-width="350">
+        <v-card>
+          <v-card-title class="headline">Remover Item</v-card-title>
+          <v-card-text>Tem certeza de que deseja remover o item selecionado?</v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="green darken-1" text @click="dialog_del = false">Cancelar</v-btn>
+            <v-btn color="red darken-1" text @click="deleteItem()">Confirmar</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </v-layout>
+  </v-container>
+</template>
+<script>
+import PessoaFisicaService from "../../services/PessoaFisicaService.js";
+
+export default {
+  name: "PessoaFisica",
+  data() {
+    return {
+      dialog: false,
+      dialog_del: false,
+      validRegistro: false,
+      show_pass1: false,
+      show_pass2: false,
+      regras: {
+        nome: [
+          v => !!v || "É necessário preencher o Usuário",
+          v =>
+            (v && v.length <= 120) || "Usuário deve possuir até 120 caractere"
+        ],
+        senha: [v => !!v || "É necessário preencher a Senha"],
+        conf_senha: [
+          v => !!v || "É necessário confirmar a Senha",
+          v => v == this.editedItem.senha || "As senhas devem ser iguais"
+        ],
+        email: [
+          v => !!v || "É necessário preencher o E-mail",
+          v => /.+@.+/.test(v) || "Formato de E-mail inválido"
+        ]
+      },
+      headers: [
+        { text: "Nome", value: "nome" },
+        { text: "E-mail", value: "email" },
+        { text: "Último Login", value: "ultimo_login" },
+        { text: "Status", value: "status" },
+        { text: "Ações", value: "acoes", sortable: false }
+      ],
+      usuarios: [],
+      editedIndex: -1,
+      deletedIndex: -1,
+      editedItem: {
+        nome: "",
+        email: "",
+        senha: "",
+        confirmar_senha: "",
+        ultimo_login: "",
+        status: null
+      },
+      defaultItem: {
+        nome: "",
+        email: "",
+        senha: "",
+        confirmar_senha: "",
+        ultimo_login: "",
+        status: true
+      }
+    };
+  },
+  computed: {
+    formTitle() {
+      return this.editedIndex === -1 ? "Novo Registro" : "Editar Registro";
+    }
+  },
+  created() {
+    this.initialize();
+  },
+  methods: {
+    initialize() {
+      this.usuarios = PessoaFisicaService.get();
+    },
+
+    editItem(item) {
+      this.editedIndex = this.usuarios.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.dialog = true;
+    },
+
+    callDeleteItem(item) {
+      const index = this.usuarios.indexOf(item);
+      this.deletedIndex = index;
+      this.dialog_del = true;
+    },
+
+    deleteItem() {
+      if (this.deletedIndex != -1) {
+        this.usuarios.splice(this.deletedIndex, 1);
+        this.editedIndex = -1;
+        this.dialog_del = false;
+      }
+    },
+    changeStatus() {},
+    close() {
+      this.dialog = false;
+      setTimeout(() => {
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedIndex = -1;
+        this.$refs.formRegistro.resetValidation();
+        this.$refs.formRegistro.reset();
+      }, 300);
+    },
+
+    save() {
+      if (this.editedIndex > -1) {
+        Object.assign(this.usuarios[this.editedIndex], this.editedItem);
+      } else {
+        this.usuarios.push(this.editedItem);
+      }
+      this.close();
+    }
+  }
+};
+</script>
+<style scoped>
+</style>

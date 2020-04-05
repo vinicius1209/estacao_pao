@@ -68,7 +68,7 @@
     </v-navigation-drawer>
 
     <!-- Top Bar -->
-    <v-app-bar app clipped-left dark :value="menu_top">
+    <v-app-bar app clipped-left dark color="primary" :value="menu_top">
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
 
       <v-toolbar-title>Pães e Variedades</v-toolbar-title>
@@ -101,7 +101,7 @@
 
 <script>
 
-import { isLoged } from '../auth.js'
+import { isLoged, logout } from '../auth.js'
 
 export default {
   name: "Menu",
@@ -118,11 +118,8 @@ export default {
   },
   methods: {
     doLogout() {
-      this.$root.$children[0].$refs.notification.makeNotification(
-        "success",
-        "Logout efetuado com sucesso :)"
-      );
-      this.logout = false;
+      logout();
+      window.location.href = '/login';
     }
   }
 };
