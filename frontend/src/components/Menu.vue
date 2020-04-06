@@ -51,6 +51,11 @@
               <v-list-item-title>Fornecedores</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
+          <v-list-item link to="/unidade-medida">
+            <v-list-item-content>
+              <v-list-item-title>Unidade Medida</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
         </v-list-group>
         <!-- end Produtos -->
 
@@ -100,8 +105,7 @@
 </template>
 
 <script>
-
-import { isLoged, logout } from '../auth.js'
+import { isLoged, logout } from "../auth.js";
 
 export default {
   name: "Menu",
@@ -110,8 +114,8 @@ export default {
     menu_top: false,
     logout: false
   }),
-  mounted: function () {
-    if(isLoged()){
+  mounted: function() {
+    if (isLoged()) {
       this.drawer = true;
       this.menu_top = true;
     }
@@ -119,7 +123,7 @@ export default {
   methods: {
     doLogout() {
       logout();
-      window.location.href = '/login';
+      window.location.href = "/login";
     }
   }
 };

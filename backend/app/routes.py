@@ -1,4 +1,4 @@
-from app.models import User
+from app.models import Usuario
 from app import app, db
 from flask import request, abort, redirect, jsonify, send_file, make_response
 from flask_jwt import jwt_required, current_identity
@@ -18,12 +18,12 @@ def signup():
 
     try:
         # Verifica usuário
-        user = User.query.filter_by(username=username).first()
+        user = Usuario.query.filter_by(username=username).first()
         if user is not None:
             return jsonify({"status": 404, "msg": "Usuário não disponível"})
 
         # Cria usuário e brinquedo
-        user = User(username=username)
+        user = Usuario(username=username)
         user.set_password(password)        
         db.session.add(user)
         db.session.commit()

@@ -1,9 +1,11 @@
 from . import db
+import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
-class User(db.Model):
-    __tablename__ = 'user'
+class Usuario(db.Model):
+    __tablename__ = 'usuario'
     id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(120))
     username = db.Column(db.String(64), index=True, unique=True)
     password_hash = db.Column(db.String(128))
 
@@ -17,22 +19,48 @@ class Produto(db.Model):
     __tablename__ = 'produto'
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(120), index=True, unique=True)
-    preco = db.Column(db.Float(precision=10))
-    qtd_estoque = db.Column(db.String(45))
+    cod_venda = db.Column(db.Integer, index=True, unique=True)
+    preco = db.Column(db.Float(precision=10), nullable=False)
+    qtd_estoque = db.Column(db.String(45), nullable=False)
     qtd_min = db.Column(db.String(45))
     ativado = db.Column(db.Boolean, unique=False, default=True)
     unidade_id = db.Column(db.Integer, db.ForeignKey('unidade_medida.id'), nullable=False)
-    categoria_id = db.Column(db.Integer, db.ForeignKey('categorias.id'), nullable=False)
-    fornecedor_id = db.Column(db.Integer, db.ForeignKey('fornecedores.id'), nullable=False)
+    categoria_id = db.Column(db.Integer, db.ForeignKey('categoria.id'), nullable=False)
+    fornecedor_id = db.Column(db.Integer, db.ForeignKey('fornecedor.id'), nullable=False)
     unidade = db.relationship('UnidadeMedida')
-    categoria = db.relationship('Categorias')
-    fornecedores = db.relationship('Fornecedores')
+    categoria = db.relationship('Categoria')
+    fornecedores = db.relationship('Fornecedor')
 
-class Categorias(db.Model):
+class VendaProduto(db.Model):
+    __tablename__ = 'venda_produto'
+    id = db.Column(db.Integer, primary_key=True)
+    venda_id = db.Column(db.Integer, db.ForeignKey('venda.id'), nullable=False)
+    produto_id = db.Column(db.Integer, db.ForeignKey('produto.id'), nullable=False)
+
+
+class Venda(db.Model):
+    __tablename__ = 'venda'
+    id = db.Column(db.Integer, primary_key=True)
+    valor_total = db.Column(db.Float(precision=10), nullable=False)
+    data = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow)
+    vendedor_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+    pagamento_id = db.Column(db.Integer, db.ForeignKey('pagamento.id'), nullable=False)
+    vendedor = db.relationship('Usuario')
+    pagamento = db.relationship('Pagamento')
+
+
+class Pagamento(db.Model):
+    __tablename__ = 'pagamento'
+    id = db.Column(db.Integer, primary_key=True)
+    forma_pagamento = db.Column(db.String(45), nullable=False)
+
+class Categoria(db.Model):
+    __tablename__ = 'categoria'
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(45), nullable=False)
 
-class Fornecedores(db.Model):
+class Fornecedor(db.Model):
+    __tablename__ = 'fornecedor'
     id = db.Column(db.Integer, primary_key=True)
     cnpj = db.Column(db.String(45), nullable=False)
     nome = db.Column(db.String(45), nullable=False)
@@ -45,5 +73,9 @@ class UnidadeMedida(db.Model):
     fracionavel = db.Column(db.Boolean, unique=False, default=False)
 
 class Log(db.Model):
+    __tablename__ = 'log'
     id = db.Column(db.Integer, primary_key=True)
-    usuario_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+    data = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow)
+    acao = db.Column(db.String(1), nullable=False)
+    descricao = db.Column(db.Text, nullable=False)

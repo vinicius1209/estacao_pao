@@ -15,43 +15,81 @@
                 <v-form v-model="validRegistro" ref="formRegistro">
                   <v-card>
                     <v-card-title>
-                      <span class="headline">{{ formTitle }}</span>
+                      <span class="headline">{{ formTitle }} - {{ editedItem.codigo }}</span>
                     </v-card-title>
                     <v-card-text>
                       <v-container>
                         <v-row>
                           <v-col cols="12" sm="12" md="12">
                             <v-text-field
-                              v-model="editedItem.descricao"
-                              label="Descrição"
-                              :rules="regras.descricao"
-                              :counter="120"
+                              v-model="editedItem.codigo"
+                              label="Código"
+                              :counter="10"
                               required
                               clearable
                             >
-                              <v-icon slot="prepend" color="green">mdi-account-outline</v-icon>
+                              <v-icon slot="prepend" color="primary">mdi-barcode</v-icon>
                             </v-text-field>
                           </v-col>
                           <v-col cols="12" sm="12" md="12">
                             <v-text-field
-                              v-model="editedItem.unidade_medida"
-                              label="Unidade Medida"
-                              :rules="regras.unidade_medida"
+                              v-model="editedItem.descricao"
+                              label="Descrição"
+                              :counter="120"
                               required
                               clearable
                             >
-                              <v-icon slot="prepend" color="green">mdi-email</v-icon>
+                              <v-icon slot="prepend" color="primary">mdi-rename-box</v-icon>
                             </v-text-field>
                           </v-col>
-                          <v-col cols="12" sm="6" md="6">
+                          <v-col cols="12" sm="12" md="4">
                             <v-text-field
-                              v-model="editedItem.preco"
-                              label="Preço"
-                              :rules="regras.preco"
+                              v-model="editedItem.unidade_medida"
+                              label="Unidade Medida"
                               required
                               clearable
                             >
-                              <v-icon slot="prepend" color="green">mdi-lock-outline</v-icon>
+                              <v-icon slot="prepend" color="primary">mdi-format-list-bulleted-type</v-icon>
+                            </v-text-field>
+                          </v-col>
+                          <v-col cols="12" sm="12" md="4">
+                            <v-text-field
+                              v-model="editedItem.preco"
+                              v-money="money"
+                              label="Preço"
+                              required
+                            >
+                              <v-icon slot="prepend" color="primary">mdi-currency-brl</v-icon>
+                            </v-text-field>
+                          </v-col>
+                          <v-col cols="12" sm="12" md="4">
+                            <v-text-field
+                              v-model="editedItem.qtd_min"
+                              label="Qtd. Mínima"
+                              required
+                              clearable
+                            >
+                              <v-icon slot="prepend" color="primary">mdi-filter-minus</v-icon>
+                            </v-text-field>
+                          </v-col>
+                          <v-col cols="12" sm="12" md="6">
+                            <v-text-field
+                              v-model="editedItem.categoria"
+                              label="Categoria"
+                              required
+                              clearable
+                            >
+                              <v-icon slot="prepend" color="primary">mdi-clipboard-list-outline</v-icon>
+                            </v-text-field>
+                          </v-col>
+                          <v-col cols="12" sm="12" md="6">
+                            <v-text-field
+                              v-model="editedItem.fornecedor"
+                              label="Fornecedor"
+                              required
+                              clearable
+                            >
+                              <v-icon slot="prepend" color="primary">mdi-truck-delivery-outline</v-icon>
                             </v-text-field>
                           </v-col>
                         </v-row>
@@ -68,9 +106,9 @@
               </v-dialog>
             </v-toolbar>
           </template>
-          <template v-slot:item.status="{ item }">
-            {{ item.ativado == true ? 'Ativado' : 'Desativado' }}
-          </template>
+          <template
+            v-slot:item.status="{ item }"
+          >{{ item.ativado == true ? 'Ativado' : 'Desativado' }}</template>
           <template v-slot:item.acoes="{ item }">
             <v-icon
               small
@@ -99,58 +137,55 @@
   </v-container>
 </template>
 <script>
-import PessoaFisicaService from "../../services/PessoaFisicaService.js";
+import axios from "axios";
+import { getAuthorization } from "../../auth.js";
 
 export default {
-  name: "PessoaFisica",
+  name: "Itens",
   data() {
     return {
       dialog: false,
       dialog_del: false,
       validRegistro: false,
-      show_pass1: false,
-      show_pass2: false,
-      regras: {
-        nome: [
-          v => !!v || "É necessário preencher o Usuário",
-          v =>
-            (v && v.length <= 120) || "Usuário deve possuir até 120 caractere"
-        ],
-        senha: [v => !!v || "É necessário preencher a Senha"],
-        conf_senha: [
-          v => !!v || "É necessário confirmar a Senha",
-          v => v == this.editedItem.senha || "As senhas devem ser iguais"
-        ],
-        email: [
-          v => !!v || "É necessário preencher o E-mail",
-          v => /.+@.+/.test(v) || "Formato de E-mail inválido"
-        ]
+      money: {
+        decimal: ",",
+        thousands: ".",
+        prefix: "",
+        suffix: "",
+        precision: 2,
+        masked: false
       },
+      regras: {},
       headers: [
-        { text: "Nome", value: "nome" },
-        { text: "E-mail", value: "email" },
-        { text: "Último Login", value: "ultimo_login" },
-        { text: "Status", value: "status" },
+        { text: "Descrição", value: "nome" },
+        { text: "Código", value: "codigo" },
+        { text: "Unidade Medida", value: "unidade_medida" },
+        { text: "Preço", value: "preco" },
+        { text: "Ativado", value: "ativado" },
         { text: "Ações", value: "acoes", sortable: false }
       ],
-      usuarios: [],
+      produtos: [],
       editedIndex: -1,
       deletedIndex: -1,
       editedItem: {
         nome: "",
-        email: "",
-        senha: "",
-        confirmar_senha: "",
-        ultimo_login: "",
-        status: null
+        codigo: "",
+        unidade_medida: "",
+        preco: "",
+        qtd_min: "",
+        categoria: "",
+        fornecedor: "",
+        ativado: ""
       },
       defaultItem: {
         nome: "",
-        email: "",
-        senha: "",
-        confirmar_senha: "",
-        ultimo_login: "",
-        status: true
+        codigo: "",
+        unidade_medida: "",
+        preco: "",
+        qtd_min: "",
+        categoria: "",
+        fornecedor: "",
+        ativado: true
       }
     };
   },
@@ -164,24 +199,48 @@ export default {
   },
   methods: {
     initialize() {
-      this.usuarios = PessoaFisicaService.get();
+      var vm = this;
+      axios
+        .get("http://127.0.0.1:5000/produtos", {
+          headers: {
+            Authorization: getAuthorization(),
+            "Content-Type": "application/json"
+          }
+        })
+        .then(function(response) {
+          if (response.status == "200") {
+            console.log(response);
+          } else {
+            vm.$root.$children[0].$refs.notification.makeNotification(
+              "warning",
+              response.statusText
+            );
+          }
+        })
+        .catch(error => {
+          vm.$root.$children[0].$refs.notification.makeNotification(
+            "error",
+            "Erro ao buscar os itens"
+          );
+          console.log(error);
+        });
     },
 
     editItem(item) {
-      this.editedIndex = this.usuarios.indexOf(item);
+      this.editedIndex = this.produtos.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
 
     callDeleteItem(item) {
-      const index = this.usuarios.indexOf(item);
+      const index = this.produtos.indexOf(item);
       this.deletedIndex = index;
       this.dialog_del = true;
     },
 
     deleteItem() {
       if (this.deletedIndex != -1) {
-        this.usuarios.splice(this.deletedIndex, 1);
+        this.produtos.splice(this.deletedIndex, 1);
         this.editedIndex = -1;
         this.dialog_del = false;
       }
@@ -199,9 +258,9 @@ export default {
 
     save() {
       if (this.editedIndex > -1) {
-        Object.assign(this.usuarios[this.editedIndex], this.editedItem);
+        Object.assign(this.produtos[this.editedIndex], this.editedItem);
       } else {
-        this.usuarios.push(this.editedItem);
+        this.produtos.push(this.editedItem);
       }
       this.close();
     }

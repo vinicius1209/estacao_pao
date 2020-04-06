@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 import { isLoged } from '../auth.js'
 import Login from '../views/Login.vue'
 import Home from '../views/Home.vue'
+import Itens from '../views/produtos/Itens.vue'
 
 Vue.use(VueRouter)
 
@@ -39,6 +40,24 @@ const routes = [
         {
           property: 'og:description',
           content: 'The home page of Panificadora.'
+        }
+      ]
+    }
+  },
+  {
+    path: '/itens',
+    name: 'Itens',
+    component: Itens,
+    meta: {
+      title: 'Itens',
+      metaTags: [
+        {
+          name: 'description',
+          content: 'The Itens page of Panificadora.'
+        },
+        {
+          property: 'og:description',
+          content: 'The Itens page of Panificadora.'
         }
       ]
     }

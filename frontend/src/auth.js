@@ -9,6 +9,10 @@ export function logout() {
     localStorage.removeItem('token');
 }
 
+export function getAuthorization(){
+    return "JWT " + localStorage.getItem('token');
+}
+
 export function isLoged() {
     const token = localStorage.getItem('token');
 
