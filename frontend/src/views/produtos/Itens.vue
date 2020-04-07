@@ -25,8 +25,8 @@
                               v-model="editedItem.codigo"
                               label="Código"
                               :counter="10"
+                              type="number"
                               required
-                              clearable
                             >
                               <v-icon slot="prepend" color="primary">mdi-barcode</v-icon>
                             </v-text-field>
@@ -43,14 +43,15 @@
                             </v-text-field>
                           </v-col>
                           <v-col cols="12" sm="12" md="4">
-                            <v-text-field
+                            <v-combobox
                               v-model="editedItem.unidade_medida"
+                              :items="unidades"
+                              item-value="id"
+                              item-text="abreviacao"
                               label="Unidade Medida"
-                              required
-                              clearable
                             >
                               <v-icon slot="prepend" color="primary">mdi-format-list-bulleted-type</v-icon>
-                            </v-text-field>
+                            </v-combobox>
                           </v-col>
                           <v-col cols="12" sm="12" md="4">
                             <v-text-field
@@ -66,31 +67,33 @@
                             <v-text-field
                               v-model="editedItem.qtd_min"
                               label="Qtd. Mínima"
+                              type="number"
                               required
-                              clearable
                             >
                               <v-icon slot="prepend" color="primary">mdi-filter-minus</v-icon>
                             </v-text-field>
                           </v-col>
                           <v-col cols="12" sm="12" md="6">
-                            <v-text-field
+                            <v-combobox
                               v-model="editedItem.categoria"
+                              :items="categorias"
+                              item-value="id"
+                              item-text="nome"
                               label="Categoria"
-                              required
-                              clearable
                             >
                               <v-icon slot="prepend" color="primary">mdi-clipboard-list-outline</v-icon>
-                            </v-text-field>
+                            </v-combobox>
                           </v-col>
                           <v-col cols="12" sm="12" md="6">
-                            <v-text-field
+                            <v-combobox
                               v-model="editedItem.fornecedor"
+                              :items="fornecedores"
+                              item-value="id"
+                              item-text="nome"
                               label="Fornecedor"
-                              required
-                              clearable
                             >
                               <v-icon slot="prepend" color="primary">mdi-truck-delivery-outline</v-icon>
-                            </v-text-field>
+                            </v-combobox>
                           </v-col>
                         </v-row>
                       </v-container>
@@ -165,6 +168,18 @@ export default {
         { text: "Ações", value: "acoes", sortable: false }
       ],
       produtos: [],
+      fornecedores: [
+        { id: 1, nome: "Estação do Pão" },
+        { id: 2, nome: "Pão Nosso" }
+      ],
+      categorias: [
+        { id: 1, nome: "Confeitaria" },
+        { id: 2, nome: "Padaria" }
+      ],
+      unidades: [
+        { id: 1, abreviacao: "Kg" },
+        { id: 2, abreviacao: "G" }
+      ],
       editedIndex: -1,
       deletedIndex: -1,
       editedItem: {

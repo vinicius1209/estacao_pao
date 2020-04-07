@@ -31,6 +31,20 @@ class Produto(db.Model):
     categoria = db.relationship('Categoria')
     fornecedores = db.relationship('Fornecedor')
 
+    def to_json(self):
+        return {
+            "id": self.id,
+            "nome": self.nome,
+            "cod_venda": self.cod_venda,
+            "preco": self.preco,
+            "qtd_estoque": self.qtd_estoque,
+            "qtd_min": self.qtd_min,
+            "ativado": self.ativado,
+            "unidade": self.unidade,
+            "categoria": self.categoria,
+            "fornecedor": self.fornecedor
+        }
+
 class VendaProduto(db.Model):
     __tablename__ = 'venda_produto'
     id = db.Column(db.Integer, primary_key=True)
@@ -65,12 +79,27 @@ class Fornecedor(db.Model):
     cnpj = db.Column(db.String(45), nullable=False)
     nome = db.Column(db.String(45), nullable=False)
 
+    def to_json(self):
+        return {
+            "id": self.id,
+            "cnpj": self.cnpj,
+            "nome": self.nome
+        }
+
 class UnidadeMedida(db.Model):
     __tablename__ = 'unidade_medida'
     id = db.Column(db.Integer, primary_key=True)
     abreviacao = db.Column(db.String(3), nullable=False)
     descricao = db.Column(db.String(45), nullable=False)
     fracionavel = db.Column(db.Boolean, unique=False, default=False)
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "abreviacao": self.abreviacao,
+            "descricao": self.descricao,
+            "fracionavel": self.fracionavel
+        }
 
 class Log(db.Model):
     __tablename__ = 'log'

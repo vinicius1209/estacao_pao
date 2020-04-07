@@ -4,6 +4,8 @@ import { isLoged } from '../auth.js'
 import Login from '../views/Login.vue'
 import Home from '../views/Home.vue'
 import Itens from '../views/produtos/Itens.vue'
+import UnidadeMedida from '../views/produtos/UnidadeMedida.vue'
+import Fornecedores from '../views/produtos/Fornecedores.vue'
 
 Vue.use(VueRouter)
 
@@ -58,6 +60,42 @@ const routes = [
         {
           property: 'og:description',
           content: 'The Itens page of Panificadora.'
+        }
+      ]
+    }
+  },
+  {
+    path: '/unidade-medida',
+    name: 'UnidadeMedida',
+    component: UnidadeMedida,
+    meta: {
+      title: 'Unidade',
+      metaTags: [
+        {
+          name: 'description',
+          content: 'The Unidade Medida page of Panificadora.'
+        },
+        {
+          property: 'og:description',
+          content: 'The Unidade Medida page of Panificadora.'
+        }
+      ]
+    }
+  },
+  {
+    path: '/fornecedores',
+    name: 'Fornecedores',
+    component: Fornecedores,
+    meta: {
+      title: 'Fornecedores',
+      metaTags: [
+        {
+          name: 'description',
+          content: 'The Fornecedores page of Panificadora.'
+        },
+        {
+          property: 'og:description',
+          content: 'The Fornecedores page of Panificadora.'
         }
       ]
     }
