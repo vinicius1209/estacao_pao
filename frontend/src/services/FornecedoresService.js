@@ -1,12 +1,12 @@
 import axios from 'axios';
 import { getAuthorization } from '../auth.js';
 
-class UnidadeMedidaService {
+class FornecedoresService {
 
     static async get() {
         try {
             const response = await axios
-                .get("http://127.0.0.1:5000/unidade-medida", {
+                .get("http://127.0.0.1:5000/fornecedores", {
                     headers: {
                         Authorization: getAuthorization(),
                         "Content-Type": "application/json"
@@ -23,7 +23,7 @@ class UnidadeMedidaService {
     static async delete(id) {
         try {
             const response = await axios
-                .post("http://127.0.0.1:5000/unidade-medida",
+                .post("http://127.0.0.1:5000/fornecedores",
                     {
                         deletedId: id
                     },
@@ -41,15 +41,14 @@ class UnidadeMedidaService {
         }
     }
 
-    static async post(id, abreviacao, descricao, fracionavel) {
+    static async post(id, cnpj, nome) {
         try {
             const response = await axios
-                .post("http://127.0.0.1:5000/unidade-medida",
+                .post("http://127.0.0.1:5000/fornecedores",
                     {
                         id: id,
-                        abreviacao: abreviacao,
-                        descricao: descricao,
-                        fracionavel: fracionavel
+                        cnpj: cnpj,
+                        nome: nome
                     },
                     {
                         headers: {
@@ -66,4 +65,4 @@ class UnidadeMedidaService {
     }
 }
 
-export default UnidadeMedidaService
+export default FornecedoresService

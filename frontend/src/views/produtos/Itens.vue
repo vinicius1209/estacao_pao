@@ -15,14 +15,14 @@
                 <v-form v-model="validRegistro" ref="formRegistro">
                   <v-card>
                     <v-card-title>
-                      <span class="headline">{{ formTitle }} - {{ editedItem.codigo }}</span>
+                      <span class="headline">{{ formTitle }} - {{ editedItem.cod_venda }}</span>
                     </v-card-title>
                     <v-card-text>
                       <v-container>
                         <v-row>
                           <v-col cols="12" sm="12" md="12">
                             <v-text-field
-                              v-model="editedItem.codigo"
+                              v-model="editedItem.cod_venda"
                               label="Código"
                               :counter="10"
                               type="number"
@@ -33,7 +33,7 @@
                           </v-col>
                           <v-col cols="12" sm="12" md="12">
                             <v-text-field
-                              v-model="editedItem.descricao"
+                              v-model="editedItem.nome"
                               label="Descrição"
                               :counter="120"
                               required
@@ -44,7 +44,7 @@
                           </v-col>
                           <v-col cols="12" sm="12" md="4">
                             <v-combobox
-                              v-model="editedItem.unidade_medida"
+                              v-model="editedItem.unidade"
                               :items="unidades"
                               item-value="id"
                               item-text="abreviacao"
@@ -102,12 +102,15 @@
                     <v-card-actions>
                       <v-spacer></v-spacer>
                       <v-btn color="red" text @click="close">Cancelar</v-btn>
-                      <v-btn color="green" text @click="close">Salvar</v-btn>
+                      <v-btn color="green" text @click="save">Salvar</v-btn>
                     </v-card-actions>
                   </v-card>
                 </v-form>
               </v-dialog>
             </v-toolbar>
+          </template>
+          <template v-slot:item.unidade="{ item }">
+            {{item.unidade.abreviacao}}
           </template>
           <template
             v-slot:item.status="{ item }"
@@ -140,9 +143,10 @@
   </v-container>
 </template>
 <script>
-import axios from "axios";
-import { getAuthorization } from "../../auth.js";
-//import UnidadeMedidaService from "../../services/UnidadeMedidaService.js";
+import CategoriasService from "../../services/CategoriasService.js";
+import FornecedoresService from "../../services/FornecedoresService.js";
+import UnidadeMedidaService from "../../services/UnidadeMedidaService.js";
+import ProdutosService from "../../services/ProdutosService.js";
 
 export default {
   name: "Itens",
@@ -162,32 +166,23 @@ export default {
       regras: {},
       headers: [
         { text: "Descrição", value: "nome" },
-        { text: "Código", value: "codigo" },
-        { text: "Unidade Medida", value: "unidade_medida" },
+        { text: "Código", value: "cod_venda" },
+        { text: "Unidade Medida", value: "unidade" },
         { text: "Preço", value: "preco" },
         { text: "Ativado", value: "ativado" },
         { text: "Ações", value: "acoes", sortable: false }
       ],
       produtos: [],
-      fornecedores: [
-        { id: 1, nome: "Estação do Pão" },
-        { id: 2, nome: "Pão Nosso" }
-      ],
-      categorias: [
-        { id: 1, nome: "Confeitaria" },
-        { id: 2, nome: "Padaria" }
-      ],
-      unidades: [
-        { id: 1, abreviacao: "Kg" },
-        { id: 2, abreviacao: "G" }
-      ],
+      fornecedores: [],
+      categorias: [],
+      unidades: [],
       editedIndex: -1,
       deletedIndex: -1,
       editedItem: {
         id: "",
         nome: "",
-        codigo: "",
-        unidade_medida: "",
+        cod_venda: "",
+        unidade: "",
         preco: "",
         qtd_min: "",
         categoria: "",
@@ -197,8 +192,8 @@ export default {
       defaultItem: {
         id: "",
         nome: "",
-        codigo: "",
-        unidade_medida: "",
+        cod_venda: "",
+        unidade: "",
         preco: "",
         qtd_min: "",
         categoria: "",
@@ -217,39 +212,18 @@ export default {
   },
   methods: {
     initialize() {
-      var vm = this;
-      axios
-        .get("http://127.0.0.1:5000/produtos", {
-          headers: {
-            Authorization: getAuthorization(),
-            "Content-Type": "application/json"
-          }
-        })
-        .then(function(response) {
-          if (response.status == 200) {
-            response.data.forEach(item => {
-              vm.produtos.push({
-                id: item.id,
-                nome: item.nome,
-                cod_venda: item.cod_venda,
-                preco: item.preco,
-                qtd_estoque: item.qtd_estoque,
-                qtd_min: item.qtd_min,
-                ativado: item.ativado,
-                unidade: item.unidade,
-                categoria: item.categoria,
-                fornecedor: item.fornecedor
-              });
-            });
-          }
-        })
-        .catch(error => {
-          vm.$root.$children[0].$refs.notification.makeNotification(
-            "error",
-            "Erro ao buscar os itens"
-          );
-          console.log(error);
-        });
+      CategoriasService.get().then(data => {
+        this.categorias = data;
+      });
+      FornecedoresService.get().then(data => {
+        this.fornecedores = data;
+      });
+      UnidadeMedidaService.get().then(data => {
+        this.unidades = data;
+      });
+      ProdutosService.get().then(data => {
+        this.produtos = data;
+      });
     },
 
     editItem(item) {
@@ -277,86 +251,48 @@ export default {
     },
 
     save() {
-      var vm = this;
       if (this.deletedIndex > -1) {
-        axios
-          .post(
-            "http://127.0.0.1:5000/produtos",
-            {
-              deletedId: this.produtos[this.deletedIndex].id
-            },
-            {
-              headers: {
-                Authorization: getAuthorization(),
-                "Content-Type": "application/json"
-              }
-            }
-          )
-          .then(function(response) {
-            if (response.data.status == 200) {
-              vm.$root.$children[0].$refs.notification.makeNotification(
+        ProdutosService.delete(this.produtos[this.deletedIndex].id).then(
+          response => {
+            if (response.status == 200) {
+              this.$root.$children[0].$refs.notification.makeNotification(
                 "success",
-                response.data.msg
+                response.msg
               );
-              vm.initialize();
+              this.initialize();
             } else {
-              vm.$root.$children[0].$refs.notification.makeNotification(
+              this.$root.$children[0].$refs.notification.makeNotification(
                 "warning",
-                response.data.msg
+                response.msg
               );
             }
-          })
-          .catch(error => {
-            vm.$root.$children[0].$refs.notification.makeNotification(
-              "error",
-              "Erro ao remover o Produto"
-            );
-            console.log(error.reponseData);
-          });
+          }
+        );
       } else {
-        axios
-          .post(
-            "http://127.0.0.1:5000/produtos",
-            {
-                id: this.editedItem.id,
-                nome: this.editedItem.nome,
-                cod_venda: this.editedItem.cod_venda,
-                preco: this.editedItem.preco,
-                qtd_estoque: this.editedItem.qtd_estoque,
-                qtd_min: this.editedItem.qtd_min,
-                ativado: this.editedItem.ativado,
-                unidade: this.editedItem.unidade,
-                categoria: this.editedItem.categoria,
-                fornecedor: this.editedItem.fornecedor
-            },
-            {
-              headers: {
-                Authorization: getAuthorization(),
-                "Content-Type": "application/json"
-              }
-            }
-          )
-          .then(function(response) {
-            if (response.data.status == 200) {
-              vm.$root.$children[0].$refs.notification.makeNotification(
-                "success",
-                response.data.msg
-              );
-              vm.initialize();
-            } else {
-              vm.$root.$children[0].$refs.notification.makeNotification(
-                "warning",
-                response.data.msg
-              );
-            }
-          })
-          .catch(error => {
-            vm.$root.$children[0].$refs.notification.makeNotification(
-              "error",
-              "Erro ao cadastrar o Produto"
+        ProdutosService.post(
+          this.editedItem.id,
+          this.editedItem.nome,
+          this.editedItem.cod_venda,
+          this.editedItem.preco,
+          this.editedItem.qtd_min,
+          this.editedItem.ativado,
+          this.editedItem.unidade,
+          this.editedItem.categoria,
+          this.editedItem.fornecedor
+        ).then(response => {
+          if (response.status == 200) {
+            this.$root.$children[0].$refs.notification.makeNotification(
+              "success",
+              response.msg
             );
-            console.log(error.reponseData);
-          });
+            this.initialize();
+          } else {
+            this.$root.$children[0].$refs.notification.makeNotification(
+              "warning",
+              response.msg
+            );
+          }
+        });
       }
       this.close();
     }

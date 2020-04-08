@@ -71,11 +71,11 @@ def produtos():
             return abort(400)
         if "qtd_min" not in data:
             return abort(400)     
-        if "unidade_id" not in data:
+        if "unidade" not in data:
             return abort(400)
-        if "categoria_id" not in data:
+        if "categoria" not in data:
             return abort(400)
-        if "fornecedor_id" not in data:
+        if "fornecedor" not in data:
             return abort(400)       
 
         produto_id = data["id"]
@@ -83,9 +83,9 @@ def produtos():
         cod_venda = data["cod_venda"]
         preco = data["preco"]
         qtd_min = data["qtd_min"]
-        unidade_id = data["unidade_id"]
-        categoria_id = data["categoria_id"]
-        fornecedor_id = data["fornecedor_id"]
+        unidade = data["unidade"]
+        categoria= data["categoria"]
+        fornecedor = data["fornecedor"]
 
         # Editando
         if produto_id != '':
@@ -95,9 +95,9 @@ def produtos():
                 produto.nome = nome
                 produto.preco = preco
                 produto.qtd_min = qtd_min
-                produto.unidade_id = unidade_id
-                produto.categoria_id = categoria_id
-                produto.fornecedor_id = fornecedor_id
+                produto.unidade_id = unidade["id"]
+                produto.categoria_id = categoria["id"]
+                produto.fornecedor_id = fornecedor["id"]
 
                 db.session.commit()
                 return jsonify({"status": 200, "msg": "Produto editado com sucesso"})
@@ -108,8 +108,8 @@ def produtos():
             return jsonify({"status": 404, "msg": "Produto já cadastrado"})
 
         produto = Produto(
-            nome=nome, cod_venda=cod_venda, preco=preco, qtd_min=qtd_min, unidade_id=unidade_id,
-            fornecedor_id=fornecedor_id, categoria_id=categoria_id, qtd_estoque=0
+            nome=nome, cod_venda=cod_venda, preco=preco, qtd_min=qtd_min, unidade_id=unidade["id"],
+            fornecedor_id=fornecedor["id"], categoria_id=categoria["id"], qtd_estoque=0
         )
 
         db.session.add(produto)

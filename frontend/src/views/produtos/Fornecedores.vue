@@ -33,9 +33,13 @@
                               v-mask="'##.###.###/####-##'"
                               label="CNPJ"
                               :counter="18"
+                              :rules="regras.cnpj"
                               required
                             >
-                              <v-icon slot="prepend" color="primary">mdi-card-account-details-outline</v-icon>
+                              <v-icon
+                                slot="prepend"
+                                color="primary"
+                              >mdi-card-account-details-outline</v-icon>
                             </v-text-field>
                           </v-col>
                           <v-col cols="12" sm="12" md="12">
@@ -43,6 +47,7 @@
                               v-model="editedItem.nome"
                               label="Nome"
                               :counter="45"
+                              :rules="regras.nome"
                               required
                               clearable
                             >
@@ -86,8 +91,7 @@
   </v-container>
 </template>
 <script>
-import axios from "axios";
-import { getAuthorization } from "../../auth.js";
+import FornecedoresService from "../../services/FornecedoresService.js";
 
 export default {
   name: "Fornecedores",
@@ -97,7 +101,13 @@ export default {
       dialog: false,
       dialog_del: false,
       validRegistro: false,
-      regras: {},
+      regras: {
+        cnpj: [v => !!v || "É necessário preencher o CNPJ"],
+        nome: [
+          v => !!v || "É necessário preencher o Nome",
+          v => (v && v.length <= 45) || "Nome deve possuir ate 45 caracteres"
+        ]
+      },
       headers: [
         { text: "CNPJ", value: "cnpj" },
         { text: "Nome", value: "nome" },
@@ -128,35 +138,9 @@ export default {
   },
   methods: {
     initialize() {
-      this.fornecedores = [];
-      var vm = this;
-      axios
-        .get("http://127.0.0.1:5000/fornecedores", {
-          headers: {
-            Authorization: getAuthorization(),
-            "Content-Type": "application/json"
-          }
-        })
-        .then(function(response) {
-          if (response.status == 200) {
-            response.data.forEach(item => {
-              vm.fornecedores.push({
-                id: item.id,
-                cnpj: item.cnpj,
-                nome: item.nome
-              });
-            });
-          }
-        })
-        .catch(error => {
-          console.log(error);
-          if (error.response.status != 304) {
-            vm.$root.$children[0].$refs.notification.makeNotification(
-              "error",
-              "Houve um erro ao buscar a listagem de fornecedores"
-            );
-          }
-        });
+      FornecedoresService.get().then(data => {
+        this.fornecedores = data;
+      });
     },
 
     editItem(item) {
@@ -186,77 +170,43 @@ export default {
     save() {
       var vm = this;
       if (this.deletedIndex > -1) {
-        axios
-          .post(
-            "http://127.0.0.1:5000/fornecedores",
-            {
-              deletedId: this.fornecedores[this.deletedIndex].id
-            },
-            {
-              headers: {
-                Authorization: getAuthorization(),
-                "Content-Type": "application/json"
-              }
-            }
-          )
-          .then(function(response) {
-            if (response.data.status == 200) {
-              vm.$root.$children[0].$refs.notification.makeNotification(
-                "success",
-                response.data.msg
-              );
-              vm.initialize();
-            } else {
-              vm.$root.$children[0].$refs.notification.makeNotification(
-                "warning",
-                response.data.msg
-              );
-            }
-          })
-          .catch(error => {
+        FornecedoresService.delete(
+          this.fornecedores[this.deletedIndex].id
+        ).then(response => {
+          if (response.status == 200) {
             vm.$root.$children[0].$refs.notification.makeNotification(
-              "error",
-              "Erro ao remover Fornecedor"
+              "success",
+              response.msg
             );
-            console.log(error.reponseData);
-          });
+            vm.initialize();
+          } else {
+            vm.$root.$children[0].$refs.notification.makeNotification(
+              "warning",
+              response.msg
+            );
+          }
+        });
       } else {
-        axios
-          .post(
-            "http://127.0.0.1:5000/fornecedores",
-            {
-              id: this.editedItem.id,
-              cnpj: this.editedItem.cnpj,
-              nome: this.editedItem.nome
-            },
-            {
-              headers: {
-                Authorization: getAuthorization(),
-                "Content-Type": "application/json"
-              }
-            }
-          )
-          .then(function(response) {
-            if (response.data.status == 200) {
+        if (this.$refs.formRegistro.validate()) {
+          FornecedoresService.post(
+            this.editedItem.id,
+            this.editedItem.cnpj,
+            this.editedItem.nome
+          ).then(response => {
+            if (response.status == 200) {
               vm.$root.$children[0].$refs.notification.makeNotification(
                 "success",
-                response.data.msg
+                response.msg
               );
               vm.initialize();
             } else {
               vm.$root.$children[0].$refs.notification.makeNotification(
                 "warning",
-                response.data.msg
+                response.msg
               );
             }
-          })
-          .catch(error => {
-            vm.$root.$children[0].$refs.notification.makeNotification(
-              "error",
-              "Erro ao cadastrar Fornecedor"
-            );
-            console.log(error.reponseData);
           });
+        }
       }
       this.close();
     }

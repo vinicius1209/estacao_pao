@@ -32,6 +32,7 @@
                               v-model="editedItem.abreviacao"
                               label="Abreviação"
                               :counter="3"
+                              :rules="regras.abreviacao"
                               required
                             >
                               <v-icon slot="prepend" color="primary">mdi-barcode</v-icon>
@@ -42,6 +43,7 @@
                               v-model="editedItem.descricao"
                               label="Descrição"
                               :counter="45"
+                              :rules="regras.descricao"
                               required
                               clearable
                             >
@@ -53,6 +55,7 @@
                               v-model="editedItem.fracionavel"
                               :false-value="false"
                               :true-value="true"
+                              :value="false"
                               label="Fracionável"
                               required
                             ></v-checkbox>
@@ -97,8 +100,7 @@
   </v-container>
 </template>
 <script>
-import axios from "axios";
-import { getAuthorization } from "../../auth.js";
+
 import UnidadeMedidaService from "../../services/UnidadeMedidaService.js";
 
 export default {
@@ -109,7 +111,18 @@ export default {
       dialog: false,
       dialog_del: false,
       validRegistro: false,
-      regras: {},
+      regras: {
+        abreviacao: [
+          v => !!v || "É necessário preencher a Abreviação",
+          v =>
+            (v && v.length <= 3) || "Abreviação deve possuir até 3 caracteres"
+        ],
+        descricao: [
+          v => !!v || "É necessário preencher a Descrição",
+          v =>
+            (v && v.length <= 45) || "Descrição deve possuir ate 45 caracteres"
+        ]
+      },
       headers: [
         { text: "Abreviação", value: "abreviacao" },
         { text: "Descrição", value: "descricao" },
@@ -173,80 +186,45 @@ export default {
     },
 
     save() {
-      var vm = this;
       if (this.deletedIndex > -1) {
-        axios
-          .post(
-            "http://127.0.0.1:5000/unidade-medida",
-            {
-              deletedId: this.unidades[this.deletedIndex].id
-            },
-            {
-              headers: {
-                Authorization: getAuthorization(),
-                "Content-Type": "application/json"
-              }
-            }
-          )
-          .then(function(response) {
-            if (response.data.status == 200) {
-              vm.$root.$children[0].$refs.notification.makeNotification(
+        UnidadeMedidaService.delete(this.unidades[this.deletedIndex].id).then(
+          response => {
+            if (response.status == 200) {
+              this.$root.$children[0].$refs.notification.makeNotification(
                 "success",
-                response.data.msg
+                response.msg
               );
-              vm.initialize();
+              this.initialize();
             } else {
-              vm.$root.$children[0].$refs.notification.makeNotification(
+              this.$root.$children[0].$refs.notification.makeNotification(
                 "warning",
-                response.data.msg
+                response.msg
               );
             }
-          })
-          .catch(error => {
-            vm.$root.$children[0].$refs.notification.makeNotification(
-              "error",
-              "Erro ao remover a Unidade de Medida"
-            );
-            console.log(error.reponseData);
-          });
+          }
+        );
       } else {
-        axios
-          .post(
-            "http://127.0.0.1:5000/unidade-medida",
-            {
-              id: this.editedItem.id,
-              abreviacao: this.editedItem.abreviacao,
-              descricao: this.editedItem.descricao,
-              fracionavel: this.editedItem.fracionavel
-            },
-            {
-              headers: {
-                Authorization: getAuthorization(),
-                "Content-Type": "application/json"
-              }
-            }
-          )
-          .then(function(response) {
-            if (response.data.status == 200) {
-              vm.$root.$children[0].$refs.notification.makeNotification(
+        if (this.$refs.formRegistro.validate()) {
+          UnidadeMedidaService.post(
+            this.editedItem.id,
+            this.editedItem.abreviacao,
+            this.editedItem.descricao,
+            this.editedItem.fracionavel
+          ).then(response => {
+            if (response.status == 200) {
+              this.$root.$children[0].$refs.notification.makeNotification(
                 "success",
-                response.data.msg
+                response.msg
               );
-              vm.initialize();
+              this.initialize();
             } else {
-              vm.$root.$children[0].$refs.notification.makeNotification(
+              this.$root.$children[0].$refs.notification.makeNotification(
                 "warning",
-                response.data.msg
+                response.msg
               );
             }
-          })
-          .catch(error => {
-            vm.$root.$children[0].$refs.notification.makeNotification(
-              "error",
-              "Erro ao cadastrar a Unidade de Medida"
-            );
-            console.log(error.reponseData);
           });
+        }
       }
       this.close();
     }

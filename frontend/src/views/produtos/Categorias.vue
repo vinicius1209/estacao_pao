@@ -32,9 +32,13 @@
                               v-model="editedItem.nome"
                               label="Categoria"
                               :counter="45"
+                              :rules="regras.nome"
                               required
                             >
-                              <v-icon slot="prepend" color="primary">mdi-card-account-details-outline</v-icon>
+                              <v-icon
+                                slot="prepend"
+                                color="primary"
+                              >mdi-card-account-details-outline</v-icon>
                             </v-text-field>
                           </v-col>
                         </v-row>
@@ -74,8 +78,7 @@
   </v-container>
 </template>
 <script>
-import axios from "axios";
-import { getAuthorization } from "../../auth.js";
+import CategoriasService from "../../services/CategoriasService.js";
 
 export default {
   name: "Categorias",
@@ -85,7 +88,12 @@ export default {
       dialog: false,
       dialog_del: false,
       validRegistro: false,
-      regras: {},
+      regras: {
+        nome: [
+          v => !!v || "É necessário preencher o Nome",
+          v => (v && v.length <= 45) || "Nome deve possuir ate 45 caracteres"
+        ]
+      },
       headers: [
         { text: "Nome", value: "nome" },
         { text: "Ações", value: "acoes", sortable: false }
@@ -113,34 +121,9 @@ export default {
   },
   methods: {
     initialize() {
-      this.categorias = [];
-      var vm = this;
-      axios
-        .get("http://127.0.0.1:5000/categorias", {
-          headers: {
-            Authorization: getAuthorization(),
-            "Content-Type": "application/json"
-          }
-        })
-        .then(function(response) {
-          if (response.status == 200) {
-            response.data.forEach(item => {
-              vm.categorias.push({
-                id: item.id,
-                nome: item.nome
-              });
-            });
-          }
-        })
-        .catch(error => {
-          console.log(error);
-          if (error.response.status != 304) {
-            vm.$root.$children[0].$refs.notification.makeNotification(
-              "error",
-              "Houve um erro ao buscar a listagem de categorias"
-            );
-          }
-        });
+      CategoriasService.get().then(data => {
+        this.categorias = data;
+      });
     },
 
     editItem(item) {
@@ -170,76 +153,41 @@ export default {
     save() {
       var vm = this;
       if (this.deletedIndex > -1) {
-        axios
-          .post(
-            "http://127.0.0.1:5000/categorias",
-            {
-              deletedId: this.categorias[this.deletedIndex].id
-            },
-            {
-              headers: {
-                Authorization: getAuthorization(),
-                "Content-Type": "application/json"
-              }
-            }
-          )
-          .then(function(response) {
-            if (response.data.status == 200) {
+        CategoriasService.delete(this.categorias[this.deletedIndex].id).then(
+          response => {
+            if (response.status == 200) {
               vm.$root.$children[0].$refs.notification.makeNotification(
                 "success",
-                response.data.msg
+                response.msg
               );
               vm.initialize();
             } else {
               vm.$root.$children[0].$refs.notification.makeNotification(
                 "warning",
-                response.data.msg
+                response.msg
               );
             }
-          })
-          .catch(error => {
-            vm.$root.$children[0].$refs.notification.makeNotification(
-              "error",
-              "Erro ao remover Categoria"
-            );
-            console.log(error.reponseData);
-          });
+          }
+        );
       } else {
-        axios
-          .post(
-            "http://127.0.0.1:5000/categorias",
-            {
-              id: this.editedItem.id,
-              nome: this.editedItem.nome
-            },
-            {
-              headers: {
-                Authorization: getAuthorization(),
-                "Content-Type": "application/json"
+        if (this.$refs.formRegistro.validate()) {
+          CategoriasService.post(this.editedItem.id, this.editedItem.nome).then(
+            response => {
+              if (response.status == 200) {
+                vm.$root.$children[0].$refs.notification.makeNotification(
+                  "success",
+                  response.msg
+                );
+                vm.initialize();
+              } else {
+                vm.$root.$children[0].$refs.notification.makeNotification(
+                  "warning",
+                  response.msg
+                );
               }
             }
-          )
-          .then(function(response) {
-            if (response.data.status == 200) {
-              vm.$root.$children[0].$refs.notification.makeNotification(
-                "success",
-                response.data.msg
-              );
-              vm.initialize();
-            } else {
-              vm.$root.$children[0].$refs.notification.makeNotification(
-                "warning",
-                response.data.msg
-              );
-            }
-          })
-          .catch(error => {
-            vm.$root.$children[0].$refs.notification.makeNotification(
-              "error",
-              "Erro ao cadastrar Categoria"
-            );
-            console.log(error.reponseData);
-          });
+          );
+        }
       }
       this.close();
     }

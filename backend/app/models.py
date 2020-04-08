@@ -20,7 +20,7 @@ class Produto(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(120), index=True, unique=True)
     cod_venda = db.Column(db.Integer, index=True, unique=True)
-    preco = db.Column(db.Float(precision=10), nullable=False)
+    preco = db.Column(db.String(120), nullable=False)
     qtd_estoque = db.Column(db.String(45), nullable=False)
     qtd_min = db.Column(db.String(45))
     ativado = db.Column(db.Boolean, unique=False, default=True)
@@ -29,7 +29,7 @@ class Produto(db.Model):
     fornecedor_id = db.Column(db.Integer, db.ForeignKey('fornecedor.id'), nullable=False)
     unidade = db.relationship('UnidadeMedida')
     categoria = db.relationship('Categoria')
-    fornecedores = db.relationship('Fornecedor')
+    fornecedor = db.relationship('Fornecedor')
 
     def to_json(self):
         return {
@@ -40,9 +40,9 @@ class Produto(db.Model):
             "qtd_estoque": self.qtd_estoque,
             "qtd_min": self.qtd_min,
             "ativado": self.ativado,
-            "unidade": self.unidade,
-            "categoria": self.categoria,
-            "fornecedor": self.fornecedor
+            "unidade": self.unidade.to_json(),
+            "categoria": self.categoria.to_json(),
+            "fornecedor": self.fornecedor.to_json()
         }
 
 class VendaProduto(db.Model):
