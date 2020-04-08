@@ -131,8 +131,8 @@
           <v-card-text>Tem certeza de que deseja remover o item selecionado?</v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="green darken-1" text @click="dialog_del = false">Cancelar</v-btn>
-            <v-btn color="red darken-1" text @click="deleteItem()">Confirmar</v-btn>
+            <v-btn color="green darken-1" text @click="close">Cancelar</v-btn>
+            <v-btn color="red darken-1" text @click="save">Confirmar</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -142,6 +142,7 @@
 <script>
 import axios from "axios";
 import { getAuthorization } from "../../auth.js";
+//import UnidadeMedidaService from "../../services/UnidadeMedidaService.js";
 
 export default {
   name: "Itens",
@@ -183,6 +184,7 @@ export default {
       editedIndex: -1,
       deletedIndex: -1,
       editedItem: {
+        id: "",
         nome: "",
         codigo: "",
         unidade_medida: "",
@@ -190,9 +192,10 @@ export default {
         qtd_min: "",
         categoria: "",
         fornecedor: "",
-        ativado: ""
+        ativado: false
       },
       defaultItem: {
+        id: "",
         nome: "",
         codigo: "",
         unidade_medida: "",
@@ -223,13 +226,21 @@ export default {
           }
         })
         .then(function(response) {
-          if (response.status == "200") {
-            console.log(response);
-          } else {
-            vm.$root.$children[0].$refs.notification.makeNotification(
-              "warning",
-              response.statusText
-            );
+          if (response.status == 200) {
+            response.data.forEach(item => {
+              vm.produtos.push({
+                id: item.id,
+                nome: item.nome,
+                cod_venda: item.cod_venda,
+                preco: item.preco,
+                qtd_estoque: item.qtd_estoque,
+                qtd_min: item.qtd_min,
+                ativado: item.ativado,
+                unidade: item.unidade,
+                categoria: item.categoria,
+                fornecedor: item.fornecedor
+              });
+            });
           }
         })
         .catch(error => {
@@ -253,29 +264,99 @@ export default {
       this.dialog_del = true;
     },
 
-    deleteItem() {
-      if (this.deletedIndex != -1) {
-        this.produtos.splice(this.deletedIndex, 1);
-        this.editedIndex = -1;
-        this.dialog_del = false;
-      }
-    },
-    changeStatus() {},
     close() {
       this.dialog = false;
+      this.dialog_del = false;
+      this.deletedIndex = -1;
+      this.editedIndex = -1;
       setTimeout(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
         this.$refs.formRegistro.resetValidation();
         this.$refs.formRegistro.reset();
       }, 300);
     },
 
     save() {
-      if (this.editedIndex > -1) {
-        Object.assign(this.produtos[this.editedIndex], this.editedItem);
+      var vm = this;
+      if (this.deletedIndex > -1) {
+        axios
+          .post(
+            "http://127.0.0.1:5000/produtos",
+            {
+              deletedId: this.produtos[this.deletedIndex].id
+            },
+            {
+              headers: {
+                Authorization: getAuthorization(),
+                "Content-Type": "application/json"
+              }
+            }
+          )
+          .then(function(response) {
+            if (response.data.status == 200) {
+              vm.$root.$children[0].$refs.notification.makeNotification(
+                "success",
+                response.data.msg
+              );
+              vm.initialize();
+            } else {
+              vm.$root.$children[0].$refs.notification.makeNotification(
+                "warning",
+                response.data.msg
+              );
+            }
+          })
+          .catch(error => {
+            vm.$root.$children[0].$refs.notification.makeNotification(
+              "error",
+              "Erro ao remover o Produto"
+            );
+            console.log(error.reponseData);
+          });
       } else {
-        this.produtos.push(this.editedItem);
+        axios
+          .post(
+            "http://127.0.0.1:5000/produtos",
+            {
+                id: this.editedItem.id,
+                nome: this.editedItem.nome,
+                cod_venda: this.editedItem.cod_venda,
+                preco: this.editedItem.preco,
+                qtd_estoque: this.editedItem.qtd_estoque,
+                qtd_min: this.editedItem.qtd_min,
+                ativado: this.editedItem.ativado,
+                unidade: this.editedItem.unidade,
+                categoria: this.editedItem.categoria,
+                fornecedor: this.editedItem.fornecedor
+            },
+            {
+              headers: {
+                Authorization: getAuthorization(),
+                "Content-Type": "application/json"
+              }
+            }
+          )
+          .then(function(response) {
+            if (response.data.status == 200) {
+              vm.$root.$children[0].$refs.notification.makeNotification(
+                "success",
+                response.data.msg
+              );
+              vm.initialize();
+            } else {
+              vm.$root.$children[0].$refs.notification.makeNotification(
+                "warning",
+                response.data.msg
+              );
+            }
+          })
+          .catch(error => {
+            vm.$root.$children[0].$refs.notification.makeNotification(
+              "error",
+              "Erro ao cadastrar o Produto"
+            );
+            console.log(error.reponseData);
+          });
       }
       this.close();
     }

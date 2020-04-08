@@ -6,6 +6,7 @@ import Home from '../views/Home.vue'
 import Itens from '../views/produtos/Itens.vue'
 import UnidadeMedida from '../views/produtos/UnidadeMedida.vue'
 import Fornecedores from '../views/produtos/Fornecedores.vue'
+import Categorias from '../views/produtos/Categorias.vue'
 
 Vue.use(VueRouter)
 
@@ -96,6 +97,24 @@ const routes = [
         {
           property: 'og:description',
           content: 'The Fornecedores page of Panificadora.'
+        }
+      ]
+    }
+  },
+  {
+    path: '/categorias',
+    name: 'Categorias',
+    component: Categorias,
+    meta: {
+      title: 'Categorias',
+      metaTags: [
+        {
+          name: 'description',
+          content: 'The Categorias page of Panificadora.'
+        },
+        {
+          property: 'og:description',
+          content: 'The Categorias page of Panificadora.'
         }
       ]
     }

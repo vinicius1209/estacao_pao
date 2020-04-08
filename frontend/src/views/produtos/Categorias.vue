@@ -2,10 +2,10 @@
   <v-container fluid grid-list-md>
     <v-layout row wrap>
       <v-flex lg12 md12 xs12>
-        <v-data-table :headers="headers" :items="unidades" :search="search" class="elevation-1">
+        <v-data-table :headers="headers" :items="categorias" :search="search" class="elevation-1">
           <template v-slot:top>
             <v-toolbar flat>
-              <v-toolbar-title>Produtos - Unidade Medida</v-toolbar-title>
+              <v-toolbar-title>Produtos - Categorias</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-text-field
                 v-model="search"
@@ -27,35 +27,15 @@
                     <v-card-text>
                       <v-container>
                         <v-row>
-                          <v-col cols="12" sm="12" md="6">
+                          <v-col cols="12" sm="12" md="12">
                             <v-text-field
-                              v-model="editedItem.abreviacao"
-                              label="Abreviação"
-                              :counter="3"
-                              required
-                            >
-                              <v-icon slot="prepend" color="primary">mdi-barcode</v-icon>
-                            </v-text-field>
-                          </v-col>
-                          <v-col cols="12" sm="12" md="6">
-                            <v-text-field
-                              v-model="editedItem.descricao"
-                              label="Descrição"
+                              v-model="editedItem.nome"
+                              label="Categoria"
                               :counter="45"
                               required
-                              clearable
                             >
-                              <v-icon slot="prepend" color="primary">mdi-rename-box</v-icon>
+                              <v-icon slot="prepend" color="primary">mdi-card-account-details-outline</v-icon>
                             </v-text-field>
-                          </v-col>
-                          <v-col cols="12" sm="12" md="12">
-                            <v-checkbox
-                              v-model="editedItem.fracionavel"
-                              :false-value="false"
-                              :true-value="true"
-                              label="Fracionável"
-                              required
-                            ></v-checkbox>
                           </v-col>
                         </v-row>
                       </v-container>
@@ -71,9 +51,6 @@
               </v-dialog>
             </v-toolbar>
           </template>
-          <template
-            v-slot:item.fracionavel="{ item }"
-          >{{ item.fracionavel == true ? 'Sim' : 'Não' }}</template>
           <template v-slot:item.acoes="{ item }">
             <v-icon small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
             <v-icon small @click="callDeleteItem(item)">mdi-delete</v-icon>
@@ -84,8 +61,8 @@
       <!-- Dialogo de remoção -->
       <v-dialog v-model="dialog_del" persistent max-width="400">
         <v-card>
-          <v-card-title class="headline">Remover Unidade de Medida</v-card-title>
-          <v-card-text>Tem certeza de que deseja remover a Unidade de Medida selecionada?</v-card-text>
+          <v-card-title class="headline">Remover Categoria</v-card-title>
+          <v-card-text>Tem certeza de que deseja remover a Categoria selecionada?</v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn color="green darken-1" text @click="close">Cancelar</v-btn>
@@ -99,10 +76,9 @@
 <script>
 import axios from "axios";
 import { getAuthorization } from "../../auth.js";
-import UnidadeMedidaService from "../../services/UnidadeMedidaService.js";
 
 export default {
-  name: "UnidadeMedida",
+  name: "Categorias",
   data() {
     return {
       search: "",
@@ -111,25 +87,19 @@ export default {
       validRegistro: false,
       regras: {},
       headers: [
-        { text: "Abreviação", value: "abreviacao" },
-        { text: "Descrição", value: "descricao" },
-        { text: "Fracionável", value: "fracionavel" },
+        { text: "Nome", value: "nome" },
         { text: "Ações", value: "acoes", sortable: false }
       ],
-      unidades: [],
+      categorias: [],
       editedIndex: -1,
       deletedIndex: -1,
       editedItem: {
         id: "",
-        abreviacao: "",
-        descricao: "",
-        fracionavel: false
+        nome: ""
       },
       defaultItem: {
         id: "",
-        abreviacao: "",
-        descricao: "",
-        fracionavel: false
+        nome: ""
       }
     };
   },
@@ -143,19 +113,44 @@ export default {
   },
   methods: {
     initialize() {
-      UnidadeMedidaService.get().then(data => {
-        this.unidades = data;
-      });
+      this.categorias = [];
+      var vm = this;
+      axios
+        .get("http://127.0.0.1:5000/categorias", {
+          headers: {
+            Authorization: getAuthorization(),
+            "Content-Type": "application/json"
+          }
+        })
+        .then(function(response) {
+          if (response.status == 200) {
+            response.data.forEach(item => {
+              vm.categorias.push({
+                id: item.id,
+                nome: item.nome
+              });
+            });
+          }
+        })
+        .catch(error => {
+          console.log(error);
+          if (error.response.status != 304) {
+            vm.$root.$children[0].$refs.notification.makeNotification(
+              "error",
+              "Houve um erro ao buscar a listagem de categorias"
+            );
+          }
+        });
     },
 
     editItem(item) {
-      this.editedIndex = this.unidades.indexOf(item);
+      this.editedIndex = this.categorias.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
 
     callDeleteItem(item) {
-      const index = this.unidades.indexOf(item);
+      const index = this.categorias.indexOf(item);
       this.deletedIndex = index;
       this.dialog_del = true;
     },
@@ -177,9 +172,9 @@ export default {
       if (this.deletedIndex > -1) {
         axios
           .post(
-            "http://127.0.0.1:5000/unidade-medida",
+            "http://127.0.0.1:5000/categorias",
             {
-              deletedId: this.unidades[this.deletedIndex].id
+              deletedId: this.categorias[this.deletedIndex].id
             },
             {
               headers: {
@@ -205,19 +200,17 @@ export default {
           .catch(error => {
             vm.$root.$children[0].$refs.notification.makeNotification(
               "error",
-              "Erro ao remover a Unidade de Medida"
+              "Erro ao remover Categoria"
             );
             console.log(error.reponseData);
           });
       } else {
         axios
           .post(
-            "http://127.0.0.1:5000/unidade-medida",
+            "http://127.0.0.1:5000/categorias",
             {
               id: this.editedItem.id,
-              abreviacao: this.editedItem.abreviacao,
-              descricao: this.editedItem.descricao,
-              fracionavel: this.editedItem.fracionavel
+              nome: this.editedItem.nome
             },
             {
               headers: {
@@ -243,7 +236,7 @@ export default {
           .catch(error => {
             vm.$root.$children[0].$refs.notification.makeNotification(
               "error",
-              "Erro ao cadastrar a Unidade de Medida"
+              "Erro ao cadastrar Categoria"
             );
             console.log(error.reponseData);
           });

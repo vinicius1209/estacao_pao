@@ -77,7 +77,7 @@
           <v-card-text>Tem certeza de que deseja remover o Fornecedor selecionado?</v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="green darken-1" text @click="dialog_del = false">Cancelar</v-btn>
+            <v-btn color="green darken-1" text @click="close">Cancelar</v-btn>
             <v-btn color="red darken-1" text @click="save">Confirmar</v-btn>
           </v-card-actions>
         </v-card>
@@ -100,7 +100,7 @@ export default {
       regras: {},
       headers: [
         { text: "CNPJ", value: "cnpj" },
-        { text: "Nome", value: "Nome" },
+        { text: "Nome", value: "nome" },
         { text: "Ações", value: "acoes", sortable: false }
       ],
       fornecedores: [],
@@ -200,16 +200,16 @@ export default {
             }
           )
           .then(function(response) {
-            if (response.status == 200) {
+            if (response.data.status == 200) {
               vm.$root.$children[0].$refs.notification.makeNotification(
                 "success",
-                "Fornecedor removido com sucesso!"
+                response.data.msg
               );
               vm.initialize();
             } else {
               vm.$root.$children[0].$refs.notification.makeNotification(
                 "warning",
-                response.data
+                response.data.msg
               );
             }
           })
@@ -225,6 +225,7 @@ export default {
           .post(
             "http://127.0.0.1:5000/fornecedores",
             {
+              id: this.editedItem.id,
               cnpj: this.editedItem.cnpj,
               nome: this.editedItem.nome
             },
@@ -236,16 +237,16 @@ export default {
             }
           )
           .then(function(response) {
-            if (response.status == 200) {
+            if (response.data.status == 200) {
               vm.$root.$children[0].$refs.notification.makeNotification(
                 "success",
-                "Fornecedor cadastrado com sucesso!"
+                response.data.msg
               );
               vm.initialize();
             } else {
               vm.$root.$children[0].$refs.notification.makeNotification(
                 "warning",
-                response.data
+                response.data.msg
               );
             }
           })

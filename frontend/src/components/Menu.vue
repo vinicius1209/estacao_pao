@@ -29,7 +29,7 @@
         <!-- end Caixa -->
 
         <!-- Produtos -->
-        <v-list-group prepend-icon="mdi-package" no-action>
+        <v-list-group prepend-icon="mdi-package" no-action value="true">
           <template v-slot:activator>
             <v-list-item-content>
               <v-list-item-title>Produtos</v-list-item-title>
@@ -118,6 +118,9 @@ export default {
     if (isLoged()) {
       this.drawer = true;
       this.menu_top = true;
+    } else {
+      this.drawer = false;
+      this.menu_top = false;
     }
   },
   methods: {
