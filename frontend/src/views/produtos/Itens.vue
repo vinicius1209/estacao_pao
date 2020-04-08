@@ -109,11 +109,10 @@
               </v-dialog>
             </v-toolbar>
           </template>
-          <template v-slot:item.unidade="{ item }">
-            {{item.unidade.abreviacao}}
-          </template>
+          <template v-slot:item.preco="{ item }">R$ {{item.preco}}</template>
+          <template v-slot:item.unidade="{ item }">{{item.unidade.abreviacao}}</template>
           <template
-            v-slot:item.status="{ item }"
+            v-slot:item.ativado="{ item }"
           >{{ item.ativado == true ? 'Ativado' : 'Desativado' }}</template>
           <template v-slot:item.acoes="{ item }">
             <v-icon
