@@ -2,7 +2,7 @@
   <v-container fluid grid-list-md>
     <!-- Cards informativos -->
     <v-layout row wrap>
-      <v-flex lg4 md4 xs12 v-for="(item, index) in cards" :key="index">
+      <v-flex lg6 md6 xs12 v-for="(item, index) in cards" :key="index">
         <v-hover v-slot:default="{ hover }">
           <v-card raised :elevation="hover ? 12 : 2">
             <div class="d-flex flex-no-wrap justify-space-between">
@@ -30,7 +30,13 @@ export default {
       {
         title: "Venda",
         subtitle: "Efetuar uma venda",
-        icon: "mdi-account-multiple",
+        icon: "mdi-package-variant",
+        color: "purple"
+      },
+      {
+        title: "Entrada",
+        subtitle: "Entrada de Produtos",
+        icon: "mdi-package-variant-closed",
         color: "purple"
       }
     ]

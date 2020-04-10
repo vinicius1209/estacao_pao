@@ -25,39 +25,59 @@
               <v-list-item-title>Venda</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
+          <v-list-item link to="/caixa/sangria">
+            <v-list-item-content>
+              <v-list-item-title>Sangria</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
         </v-list-group>
         <!-- end Caixa -->
 
-        <!-- Produtos -->
-        <v-list-group prepend-icon="mdi-package" no-action value="true">
+        <!-- Estoque -->
+        <v-list-group prepend-icon="mdi-package" no-action>
           <template v-slot:activator>
             <v-list-item-content>
-              <v-list-item-title>Produtos</v-list-item-title>
+              <v-list-item-title>Estoque</v-list-item-title>
             </v-list-item-content>
           </template>
 
-          <v-list-item link to="/itens">
+          <v-list-item link to="/estoque/produtos">
             <v-list-item-content>
-              <v-list-item-title>Itens</v-list-item-title>
+              <v-list-item-title>Produtos</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
-          <v-list-item link to="/categorias">
+          <v-list-item link to="/estoque/entrada">
+            <v-list-item-content>
+              <v-list-item-title>Entrada</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list-group>
+        <!-- end Estoque -->
+
+        <!-- Configurações -->
+        <v-list-group prepend-icon="mdi-cog-outline" no-action>
+          <template v-slot:activator>
+            <v-list-item-content>
+              <v-list-item-title>Configurações</v-list-item-title>
+            </v-list-item-content>
+          </template>
+          <v-list-item link to="/configuracoes/categorias">
             <v-list-item-content>
               <v-list-item-title>Categorias</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
-          <v-list-item link to="/fornecedores">
+          <v-list-item link to="/configuracoes/fornecedores">
             <v-list-item-content>
               <v-list-item-title>Fornecedores</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
-          <v-list-item link to="/unidade-medida">
+          <v-list-item link to="/configuracoes/unidade-medida">
             <v-list-item-content>
               <v-list-item-title>Unidade Medida</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
         </v-list-group>
-        <!-- end Produtos -->
+        <!-- End -->
 
         <!-- Relatórios -->
         <v-list-item link to="/relatorios">

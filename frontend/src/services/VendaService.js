@@ -1,12 +1,12 @@
 import axios from 'axios';
 import { getAuthorization } from '../auth.js';
 
-class ProdutosService {
+class VendaService {
 
     static async get() {
         try {
             const response = await axios
-                .get("http://127.0.0.1:5000/produtos", {
+                .get("http://127.0.0.1:5000/compras", {
                     headers: {
                         Authorization: getAuthorization(),
                         "Content-Type": "application/json"
@@ -23,7 +23,7 @@ class ProdutosService {
     static async delete(id) {
         try {
             const response = await axios
-                .post("http://127.0.0.1:5000/produtos",
+                .post("http://127.0.0.1:5000/compras",
                     {
                         deletedId: id
                     },
@@ -71,4 +71,4 @@ class ProdutosService {
     }
 }
 
-export default ProdutosService
+export default VendaService

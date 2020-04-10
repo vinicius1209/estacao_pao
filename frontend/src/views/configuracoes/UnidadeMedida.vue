@@ -5,7 +5,7 @@
         <v-data-table :headers="headers" :items="unidades" :search="search" class="elevation-1">
           <template v-slot:top>
             <v-toolbar flat>
-              <v-toolbar-title>Produtos - Unidade Medida</v-toolbar-title>
+              <v-toolbar-title>Unidade Medida</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-text-field
                 v-model="search"

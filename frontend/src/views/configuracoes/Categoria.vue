@@ -5,7 +5,7 @@
         <v-data-table :headers="headers" :items="categorias" :search="search" class="elevation-1">
           <template v-slot:top>
             <v-toolbar flat>
-              <v-toolbar-title>Produtos - Categorias</v-toolbar-title>
+              <v-toolbar-title>Categorias</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-text-field
                 v-model="search"
@@ -78,10 +78,10 @@
   </v-container>
 </template>
 <script>
-import CategoriasService from "../../services/CategoriasService.js";
+import CategoriaService from "../../services/CategoriaService.js";
 
 export default {
-  name: "Categorias",
+  name: "Categoria",
   data() {
     return {
       search: "",
@@ -121,7 +121,7 @@ export default {
   },
   methods: {
     initialize() {
-      CategoriasService.get().then(data => {
+      CategoriaService.get().then(data => {
         this.categorias = data;
       });
     },
@@ -151,18 +151,17 @@ export default {
     },
 
     save() {
-      var vm = this;
       if (this.deletedIndex > -1) {
-        CategoriasService.delete(this.categorias[this.deletedIndex].id).then(
+        CategoriaService.delete(this.categorias[this.deletedIndex].id).then(
           response => {
             if (response.status == 200) {
-              vm.$root.$children[0].$refs.notification.makeNotification(
+              this.$root.$children[0].$refs.notification.makeNotification(
                 "success",
                 response.msg
               );
-              vm.initialize();
+              this.initialize();
             } else {
-              vm.$root.$children[0].$refs.notification.makeNotification(
+              this.$root.$children[0].$refs.notification.makeNotification(
                 "warning",
                 response.msg
               );
@@ -171,16 +170,16 @@ export default {
         );
       } else {
         if (this.$refs.formRegistro.validate()) {
-          CategoriasService.post(this.editedItem.id, this.editedItem.nome).then(
+          CategoriaService.post(this.editedItem.id, this.editedItem.nome).then(
             response => {
               if (response.status == 200) {
-                vm.$root.$children[0].$refs.notification.makeNotification(
+                this.$root.$children[0].$refs.notification.makeNotification(
                   "success",
                   response.msg
                 );
-                vm.initialize();
+                this.initialize();
               } else {
-                vm.$root.$children[0].$refs.notification.makeNotification(
+                this.$root.$children[0].$refs.notification.makeNotification(
                   "warning",
                   response.msg
                 );

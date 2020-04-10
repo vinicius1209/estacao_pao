@@ -20,7 +20,8 @@ class Produto(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(120), index=True, unique=True)
     cod_venda = db.Column(db.Integer, index=True, unique=True)
-    preco = db.Column(db.String(120), nullable=False)
+    preco_compra = db.Column(db.String(45), nullable=False)
+    preco_venda = db.Column(db.String(45), nullable=False)
     qtd_estoque = db.Column(db.String(45), nullable=False)
     qtd_min = db.Column(db.String(45))
     ativado = db.Column(db.Boolean, unique=False, default=True)
@@ -36,7 +37,8 @@ class Produto(db.Model):
             "id": self.id,
             "nome": self.nome,
             "cod_venda": self.cod_venda,
-            "preco": self.preco,
+            "preco_compra": self.preco_compra,
+            "preco_venda": self.preco_venda,
             "qtd_estoque": self.qtd_estoque,
             "qtd_min": self.qtd_min,
             "ativado": self.ativado,
@@ -45,12 +47,41 @@ class Produto(db.Model):
             "fornecedor": self.fornecedor.to_json()
         }
 
+
+class Entrada(db.Model):
+    __tablename__ = 'entrada'
+    id = db.Column(db.Integer, primary_key=True)
+    data = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+    usuario = db.relationship('Usuario')
+
+
+class EntradaProduto(db.Model):
+    __tablename__ = 'entrada_produto'
+    id = db.Column(db.Integer, primary_key=True)
+    entrada_id = db.Column(db.Integer, db.ForeignKey('entrada.id'), nullable=False)
+    qtd_entrada = db.Column(db.Integer, nullable=False)
+    produto_id = db.Column(db.Integer, db.ForeignKey('produto.id'), nullable=False)
+    entrada = db.relationship('Entrada')
+    produto = db.relationship('Produto')
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "qtd_entrada": self.qtd_entrada,
+            "produto": self.produto.to_json(),
+            "entrada": self.entrada.to_json()
+        }
+
+
+
 class VendaProduto(db.Model):
     __tablename__ = 'venda_produto'
     id = db.Column(db.Integer, primary_key=True)
     venda_id = db.Column(db.Integer, db.ForeignKey('venda.id'), nullable=False)
     produto_id = db.Column(db.Integer, db.ForeignKey('produto.id'), nullable=False)
-
+    venda = db.relationship('Venda')
+    produto = db.relationship('Produto')
 
 class Venda(db.Model):
     __tablename__ = 'venda'
@@ -68,6 +99,7 @@ class Pagamento(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     forma_pagamento = db.Column(db.String(45), nullable=False)
 
+
 class Categoria(db.Model):
     __tablename__ = 'categoria'
     id = db.Column(db.Integer, primary_key=True)
@@ -78,6 +110,7 @@ class Categoria(db.Model):
             "id": self.id,
             "nome": self.nome
         }
+
 
 class Fornecedor(db.Model):
     __tablename__ = 'fornecedor'
@@ -107,6 +140,7 @@ class UnidadeMedida(db.Model):
             "fracionavel": self.fracionavel
         }
 
+
 class Log(db.Model):
     __tablename__ = 'log'
     id = db.Column(db.Integer, primary_key=True)
@@ -114,3 +148,4 @@ class Log(db.Model):
     data = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow)
     acao = db.Column(db.String(1), nullable=False)
     descricao = db.Column(db.Text, nullable=False)
+

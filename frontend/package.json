@@ -15,6 +15,7 @@
     "vue-jwt-decode": "^0.1.0",
     "vue-router": "^3.1.6",
     "vue-the-mask": "^0.11.1",
+    "vue2-waterfall": "^2.0.3",
     "vuetify": "^2.2.11"
   },
   "devDependencies": {

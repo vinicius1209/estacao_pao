@@ -1,4 +1,4 @@
-from app.models import Usuario, Produto, Fornecedor, UnidadeMedida, Categoria
+from app.models import Usuario, Produto, Entrada, EntradaProduto, Fornecedor, UnidadeMedida, Categoria
 from app import app, db
 from sqlalchemy import or_, desc
 from flask import request, abort, redirect, jsonify, send_file, make_response
@@ -67,7 +67,11 @@ def produtos():
             return abort(400)
         if "cod_venda" not in data:
             return abort(400)
-        if "preco" not in data:
+        if "preco_compra" not in data:
+            return abort(400)
+        if "preco_venda" not in data:
+            return abort(400)            
+        if "ativado" not in data:
             return abort(400)
         if "qtd_min" not in data:
             return abort(400)     
@@ -81,7 +85,9 @@ def produtos():
         produto_id = data["id"]
         nome = data["nome"]
         cod_venda = data["cod_venda"]
-        preco = data["preco"]
+        preco_compra = data["preco_compra"]
+        preco_venda = data["preco_venda"]
+        ativado = data["ativado"]
         qtd_min = data["qtd_min"]
         unidade = data["unidade"]
         categoria= data["categoria"]
@@ -93,7 +99,9 @@ def produtos():
             if produto is not None:
                 produto.cod_venda = cod_venda
                 produto.nome = nome
-                produto.preco = preco
+                produto.preco_compra = preco_compra
+                produto.preco_venda = preco_venda
+                produto.ativado = ativado
                 produto.qtd_min = qtd_min
                 produto.unidade_id = unidade["id"]
                 produto.categoria_id = categoria["id"]
@@ -108,7 +116,8 @@ def produtos():
             return jsonify({"status": 404, "msg": "Produto já cadastrado"})
 
         produto = Produto(
-            nome=nome, cod_venda=cod_venda, preco=preco, qtd_min=qtd_min, unidade_id=unidade["id"],
+            nome=nome, cod_venda=cod_venda, preco_compra=preco_compra, preco_venda=preco_venda, 
+            qtd_min=qtd_min, unidade_id=unidade["id"],
             fornecedor_id=fornecedor["id"], categoria_id=categoria["id"], qtd_estoque=0
         )
 
@@ -118,6 +127,31 @@ def produtos():
 
     else:
         return abort(404)
+
+@app.route('/entradas', methods=['GET', 'POST'])
+@jwt_required()
+def entradas():
+    if request.method == 'GET':
+        entradas = Entrada.query.all()
+        response = []
+        if entradas:
+            for entrada in entradas:
+                entrada_produto = EntradaProduto.query.filter_by(entrada_id=entrada.id).all()
+                response.append(registro.to_json() for registro in entrada_produto)
+            return jsonify(response)
+        else:
+            return jsonify(response), 304
+    elif request.method == 'POST':
+        data = request.get_json(silent=True)
+
+        usuario_id = current_identity.id
+        if "produtos" not in data:
+            return abort(400)
+
+
+    else:
+        return abort(404)
+
 
 @app.route('/categorias', methods=['GET', 'POST'])
 @jwt_required()

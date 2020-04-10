@@ -2,25 +2,44 @@
   <v-container fluid grid-list-md>
     <v-layout row wrap>
       <v-flex lg12 md12 xs12>
-        <v-data-table :headers="headers" :items="produtos" class="elevation-1">
+        <v-data-table
+          :headers="headers"
+          :items="produtos"
+          :search="search"
+          multi-sort
+          :loading="carregando_table"
+          loading-text="Buscando registros..."
+          class="elevation-1"
+        >
           <template v-slot:top>
             <v-toolbar flat>
-              <v-toolbar-title>Produtos - Itens</v-toolbar-title>
+              <v-toolbar-title>Produtos</v-toolbar-title>
               <v-spacer></v-spacer>
+              <v-text-field
+                v-model="search"
+                append-icon="mdi-magnify"
+                label="Buscar"
+                single-line
+                hide-details
+              ></v-text-field>
               <v-toolbar-items>
-                <v-btn text @click="dialog = true">Novo</v-btn>
+                <v-btn text @click="dialog = true" color="primary">Novo</v-btn>
               </v-toolbar-items>
               <!--Dialogo de inserção / edição -->
               <v-dialog v-model="dialog" max-width="640px" persistent>
                 <v-form v-model="validRegistro" ref="formRegistro">
                   <v-card>
                     <v-card-title>
-                      <span class="headline">{{ formTitle }} - {{ editedItem.cod_venda }}</span>
+                      <span
+                        class="headline"
+                        v-if="editedItem.cod_venda != ''"
+                      >{{ formTitle }} - {{ editedItem.cod_venda }}</span>
+                      <span class="headline" v-else>{{ formTitle }}</span>
                     </v-card-title>
                     <v-card-text>
                       <v-container>
                         <v-row>
-                          <v-col cols="12" sm="12" md="12">
+                          <v-col cols="12" sm="12" md="6">
                             <v-text-field
                               v-model="editedItem.cod_venda"
                               label="Código"
@@ -31,7 +50,7 @@
                               <v-icon slot="prepend" color="primary">mdi-barcode</v-icon>
                             </v-text-field>
                           </v-col>
-                          <v-col cols="12" sm="12" md="12">
+                          <v-col cols="12" sm="12" md="6">
                             <v-text-field
                               v-model="editedItem.nome"
                               label="Descrição"
@@ -42,7 +61,27 @@
                               <v-icon slot="prepend" color="primary">mdi-rename-box</v-icon>
                             </v-text-field>
                           </v-col>
-                          <v-col cols="12" sm="12" md="4">
+                          <v-col cols="12" sm="12" md="6">
+                            <v-text-field
+                              v-model="editedItem.preco_compra"
+                              v-money="money"
+                              label="Preço de Compra"
+                              required
+                            >
+                              <v-icon slot="prepend" color="primary">mdi-currency-brl</v-icon>
+                            </v-text-field>
+                          </v-col>
+                          <v-col cols="12" sm="12" md="6">
+                            <v-text-field
+                              v-model="editedItem.preco_venda"
+                              v-money="money"
+                              label="Preço de Venda"
+                              required
+                            >
+                              <v-icon slot="prepend" color="primary">mdi-currency-brl</v-icon>
+                            </v-text-field>
+                          </v-col>
+                          <v-col cols="12" sm="12" md="6">
                             <v-combobox
                               v-model="editedItem.unidade"
                               :items="unidades"
@@ -53,17 +92,7 @@
                               <v-icon slot="prepend" color="primary">mdi-format-list-bulleted-type</v-icon>
                             </v-combobox>
                           </v-col>
-                          <v-col cols="12" sm="12" md="4">
-                            <v-text-field
-                              v-model="editedItem.preco"
-                              v-money="money"
-                              label="Preço"
-                              required
-                            >
-                              <v-icon slot="prepend" color="primary">mdi-currency-brl</v-icon>
-                            </v-text-field>
-                          </v-col>
-                          <v-col cols="12" sm="12" md="4">
+                          <v-col cols="12" sm="12" md="6">
                             <v-text-field
                               v-model="editedItem.qtd_min"
                               label="Qtd. Mínima"
@@ -109,7 +138,11 @@
               </v-dialog>
             </v-toolbar>
           </template>
-          <template v-slot:item.preco="{ item }">R$ {{item.preco}}</template>
+          <template v-slot:item.qtd_estoque="{ item }">
+            <v-chip :color="getColor(item.qtd_estoque, item.qtd_min)" dark>{{ item.qtd_estoque }}</v-chip>
+          </template>
+          <template v-slot:item.preco_compra="{ item }">R$ {{item.preco_compra}}</template>
+          <template v-slot:item.preco_venda="{ item }">R$ {{item.preco_venda}}</template>
           <template v-slot:item.unidade="{ item }">{{item.unidade.abreviacao}}</template>
           <template
             v-slot:item.ativado="{ item }"
@@ -118,7 +151,7 @@
             <v-icon
               small
               class="mr-2"
-              @click="changeStatus(item)"
+              @click="callChangeStatusItem(item)"
             >{{ item.status === true ? 'mdi-account-cancel' : 'mdi-account-check'}}</v-icon>
             <v-icon small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
             <v-icon small @click="callDeleteItem(item)">mdi-delete</v-icon>
@@ -138,21 +171,39 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
+      <!-- end -->
+
+      <!-- Dialogo de status -->
+      <v-dialog v-model="dialog_status" persistent max-width="350">
+        <v-card>
+          <v-card-title class="headline">Alterar status do Item</v-card-title>
+          <v-card-text>Tem certeza de que deseja alterar o status do item selecionado para: {{ editedItem.ativado }}?</v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="green darken-1" text @click="close">Cancelar</v-btn>
+            <v-btn color="red darken-1" text @click="save">Confirmar</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <!-- end -->
     </v-layout>
   </v-container>
 </template>
 <script>
-import CategoriasService from "../../services/CategoriasService.js";
-import FornecedoresService from "../../services/FornecedoresService.js";
+import CategoriaService from "../../services/CategoriaService.js";
+import FornecedorService from "../../services/FornecedorService.js";
 import UnidadeMedidaService from "../../services/UnidadeMedidaService.js";
-import ProdutosService from "../../services/ProdutosService.js";
+import ProdutoService from "../../services/ProdutoService.js";
 
 export default {
-  name: "Itens",
+  name: "Produto",
   data() {
     return {
+      search: "",
+      carregando_table: false,
       dialog: false,
       dialog_del: false,
+      dialog_status: false,
       validRegistro: false,
       money: {
         decimal: ",",
@@ -164,10 +215,12 @@ export default {
       },
       regras: {},
       headers: [
-        { text: "Descrição", value: "nome" },
         { text: "Código", value: "cod_venda" },
+        { text: "Descrição", value: "nome" },
+        { text: "Estoque", value: "qtd_estoque" },
         { text: "Unidade Medida", value: "unidade" },
-        { text: "Preço", value: "preco" },
+        { text: "Preço de Compra", value: "preco_compra" },
+        { text: "Preço de Venda", value: "preco_venda" },
         { text: "Ativado", value: "ativado" },
         { text: "Ações", value: "acoes", sortable: false }
       ],
@@ -182,7 +235,8 @@ export default {
         nome: "",
         cod_venda: "",
         unidade: "",
-        preco: "",
+        preco_venda: "",
+        preco_compra: "",
         qtd_min: "",
         categoria: "",
         fornecedor: "",
@@ -193,7 +247,8 @@ export default {
         nome: "",
         cod_venda: "",
         unidade: "",
-        preco: "",
+        preco_venda: "",
+        preco_compra: "",
         qtd_min: "",
         categoria: "",
         fornecedor: "",
@@ -211,17 +266,19 @@ export default {
   },
   methods: {
     initialize() {
-      CategoriasService.get().then(data => {
+      this.carregando_table = true;
+      CategoriaService.get().then(data => {
         this.categorias = data;
       });
-      FornecedoresService.get().then(data => {
+      FornecedorService.get().then(data => {
         this.fornecedores = data;
       });
       UnidadeMedidaService.get().then(data => {
         this.unidades = data;
       });
-      ProdutosService.get().then(data => {
+      ProdutoService.get().then(data => {
         this.produtos = data;
+        this.carregando_table = false;
       });
     },
 
@@ -229,6 +286,13 @@ export default {
       this.editedIndex = this.produtos.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
+    },
+
+    callChangeStatusItem(item) {
+      this.editedIndex = this.produtos.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.editedItem.ativado = !this.editedItem.ativado;
+      this.dialog_status = true;
     },
 
     callDeleteItem(item) {
@@ -240,6 +304,7 @@ export default {
     close() {
       this.dialog = false;
       this.dialog_del = false;
+      this.dialog_status = false;
       this.deletedIndex = -1;
       this.editedIndex = -1;
       setTimeout(() => {
@@ -251,7 +316,7 @@ export default {
 
     save() {
       if (this.deletedIndex > -1) {
-        ProdutosService.delete(this.produtos[this.deletedIndex].id).then(
+        ProdutoService.delete(this.produtos[this.deletedIndex].id).then(
           response => {
             if (response.status == 200) {
               this.$root.$children[0].$refs.notification.makeNotification(
@@ -268,11 +333,12 @@ export default {
           }
         );
       } else {
-        ProdutosService.post(
+        ProdutoService.post(
           this.editedItem.id,
           this.editedItem.nome,
           this.editedItem.cod_venda,
-          this.editedItem.preco,
+          this.editedItem.preco_venda,
+          this.editedItem.preco_compra,
           this.editedItem.qtd_min,
           this.editedItem.ativado,
           this.editedItem.unidade,
@@ -294,6 +360,12 @@ export default {
         });
       }
       this.close();
+    },
+
+    getColor(qtd, min) {
+      if (qtd == 0) return "red";
+      else if (qtd <= min) return "orange";
+      else return "green";
     }
   }
 };

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getAuthorization } from '../auth.js';
 
-class FornecedoresService {
+class FornecedorService {
 
     static async get() {
         try {
@@ -65,4 +65,4 @@ class FornecedoresService {
     }
 }
 
-export default FornecedoresService
+export default FornecedorService

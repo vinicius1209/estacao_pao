@@ -5,7 +5,7 @@
         <v-data-table :headers="headers" :items="fornecedores" :search="search" class="elevation-1">
           <template v-slot:top>
             <v-toolbar flat>
-              <v-toolbar-title>Produtos - Fornecedores</v-toolbar-title>
+              <v-toolbar-title>Fornecedores</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-text-field
                 v-model="search"
@@ -91,10 +91,10 @@
   </v-container>
 </template>
 <script>
-import FornecedoresService from "../../services/FornecedoresService.js";
+import FornecedorService from "../../services/FornecedorService.js";
 
 export default {
-  name: "Fornecedores",
+  name: "Fornecedor",
   data() {
     return {
       search: "",
@@ -138,7 +138,7 @@ export default {
   },
   methods: {
     initialize() {
-      FornecedoresService.get().then(data => {
+      FornecedorService.get().then(data => {
         this.fornecedores = data;
       });
     },
@@ -168,19 +168,18 @@ export default {
     },
 
     save() {
-      var vm = this;
       if (this.deletedIndex > -1) {
-        FornecedoresService.delete(
+        FornecedorService.delete(
           this.fornecedores[this.deletedIndex].id
         ).then(response => {
           if (response.status == 200) {
-            vm.$root.$children[0].$refs.notification.makeNotification(
+            this.$root.$children[0].$refs.notification.makeNotification(
               "success",
               response.msg
             );
-            vm.initialize();
+            this.initialize();
           } else {
-            vm.$root.$children[0].$refs.notification.makeNotification(
+            this.$root.$children[0].$refs.notification.makeNotification(
               "warning",
               response.msg
             );
@@ -188,19 +187,19 @@ export default {
         });
       } else {
         if (this.$refs.formRegistro.validate()) {
-          FornecedoresService.post(
+          FornecedorService.post(
             this.editedItem.id,
             this.editedItem.cnpj,
             this.editedItem.nome
           ).then(response => {
             if (response.status == 200) {
-              vm.$root.$children[0].$refs.notification.makeNotification(
+              this.$root.$children[0].$refs.notification.makeNotification(
                 "success",
                 response.msg
               );
-              vm.initialize();
+              this.initialize();
             } else {
-              vm.$root.$children[0].$refs.notification.makeNotification(
+              this.$root.$children[0].$refs.notification.makeNotification(
                 "warning",
                 response.msg
               );

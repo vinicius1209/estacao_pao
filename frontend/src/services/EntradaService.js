@@ -1,12 +1,12 @@
 import axios from 'axios';
 import { getAuthorization } from '../auth.js';
 
-class CategoriasService {
+class EntradaService {
 
     static async get() {
         try {
             const response = await axios
-                .get("http://127.0.0.1:5000/categorias", {
+                .get("http://127.0.0.1:5000/entradas", {
                     headers: {
                         Authorization: getAuthorization(),
                         "Content-Type": "application/json"
@@ -23,7 +23,7 @@ class CategoriasService {
     static async delete(id) {
         try {
             const response = await axios
-                .post("http://127.0.0.1:5000/categorias",
+                .post("http://127.0.0.1:5000/compras",
                     {
                         deletedId: id
                     },
@@ -41,13 +41,20 @@ class CategoriasService {
         }
     }
 
-    static async post(id, nome) {
+    static async post(id, nome, cod_venda, preco, qtd_min, ativado, unidade, categoria, fornecedor) {
         try {
             const response = await axios
-                .post("http://127.0.0.1:5000/categorias",
+                .post("http://127.0.0.1:5000/produtos",
                     {
                         id: id,
-                        nome: nome
+                        nome: nome,
+                        cod_venda: cod_venda,
+                        preco: preco,
+                        qtd_min: qtd_min,
+                        ativado: ativado,
+                        unidade: unidade,
+                        categoria: categoria,
+                        fornecedor: fornecedor
                     },
                     {
                         headers: {
@@ -64,4 +71,4 @@ class CategoriasService {
     }
 }
 
-export default CategoriasService
+export default EntradaService

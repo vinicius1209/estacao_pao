@@ -3,10 +3,12 @@ import VueRouter from 'vue-router'
 import { isLoged } from '../auth.js'
 import Login from '../views/Login.vue'
 import Home from '../views/Home.vue'
-import Itens from '../views/produtos/Itens.vue'
-import UnidadeMedida from '../views/produtos/UnidadeMedida.vue'
-import Fornecedores from '../views/produtos/Fornecedores.vue'
-import Categorias from '../views/produtos/Categorias.vue'
+import Venda from '../views/caixa/Venda.vue'
+import Produto from '../views/estoque/Produto.vue'
+import Entrada from '../views/estoque/Entrada.vue'
+import UnidadeMedida from '../views/configuracoes/UnidadeMedida.vue'
+import Fornecedor from '../views/configuracoes/Fornecedor.vue'
+import Categoria from '../views/configuracoes/Categoria.vue';
 
 Vue.use(VueRouter)
 
@@ -48,25 +50,61 @@ const routes = [
     }
   },
   {
-    path: '/itens',
-    name: 'Itens',
-    component: Itens,
+    path: '/caixa/venda',
+    name: 'Venda',
+    component: Venda,
     meta: {
-      title: 'Itens',
+      title: 'Venda',
       metaTags: [
         {
           name: 'description',
-          content: 'The Itens page of Panificadora.'
+          content: 'The Venda page of Panificadora.'
         },
         {
           property: 'og:description',
-          content: 'The Itens page of Panificadora.'
+          content: 'The Venda page of Panificadora.'
         }
       ]
     }
   },
   {
-    path: '/unidade-medida',
+    path: '/estoque/produtos',
+    name: 'Produtos',
+    component: Produto,
+    meta: {
+      title: 'Produto',
+      metaTags: [
+        {
+          name: 'description',
+          content: 'The Produto page of Panificadora.'
+        },
+        {
+          property: 'og:description',
+          content: 'The Produto page of Panificadora.'
+        }
+      ]
+    }
+  },
+  {
+    path: '/estoque/entrada',
+    name: 'Entrada',
+    component: Entrada,
+    meta: {
+      title: 'Entrada',
+      metaTags: [
+        {
+          name: 'description',
+          content: 'The Entrada page of Panificadora.'
+        },
+        {
+          property: 'og:description',
+          content: 'The Entrada page of Panificadora.'
+        }
+      ]
+    }
+  },
+  {
+    path: '/configuracoes/unidade-medida',
     name: 'UnidadeMedida',
     component: UnidadeMedida,
     meta: {
@@ -84,9 +122,9 @@ const routes = [
     }
   },
   {
-    path: '/fornecedores',
-    name: 'Fornecedores',
-    component: Fornecedores,
+    path: '/configuracoes/fornecedores',
+    name: 'Fornecedor',
+    component: Fornecedor,
     meta: {
       title: 'Fornecedores',
       metaTags: [
@@ -102,9 +140,9 @@ const routes = [
     }
   },
   {
-    path: '/categorias',
-    name: 'Categorias',
-    component: Categorias,
+    path: '/configuracoes/categorias',
+    name: 'Categoria',
+    component: Categoria,
     meta: {
       title: 'Categorias',
       metaTags: [
@@ -156,14 +194,14 @@ router.beforeEach((to, from, next) => {
 
       next();
     } else {
-      router.push('/login');
+      window.location.href = '/login';
     }
   }
   else if (to.path == '/login' || to.path == '/register' || to.path == '/auth') {
     next();
   }
   else {
-    router.push('/login');
+    window.location.href = '/login';
   }
 });
 
