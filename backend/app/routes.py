@@ -145,9 +145,22 @@ def entradas():
         data = request.get_json(silent=True)
 
         usuario_id = current_identity.id
+        
         if "produtos" not in data:
             return abort(400)
 
+        produtos = data["produtos"]
+        
+        # Inserindo
+        entrada = Entrada(usuario_id=usuario_id)
+        db.session.add(entrada)
+        db.session.commit()
+
+        if entrada:
+            for produto in produtos:
+                entrada_produto = EntradaProduto(entrada_id=entrada.id, qtd_entrada=produto["qtd"])
+
+        return jsonify({"status": 200, "msg": "Categoria removida com sucesso"})
 
     else:
         return abort(404)

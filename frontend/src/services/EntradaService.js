@@ -41,20 +41,12 @@ class EntradaService {
         }
     }
 
-    static async post(id, nome, cod_venda, preco, qtd_min, ativado, unidade, categoria, fornecedor) {
+    static async post(produtos) {
         try {
             const response = await axios
-                .post("http://127.0.0.1:5000/produtos",
+                .post("http://127.0.0.1:5000/entradas",
                     {
-                        id: id,
-                        nome: nome,
-                        cod_venda: cod_venda,
-                        preco: preco,
-                        qtd_min: qtd_min,
-                        ativado: ativado,
-                        unidade: unidade,
-                        categoria: categoria,
-                        fornecedor: fornecedor
+                        produtos: produtos
                     },
                     {
                         headers: {

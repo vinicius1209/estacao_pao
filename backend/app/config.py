@@ -7,4 +7,4 @@ class Config(object):
 	SECRET_KEY='123456'
 	SQLALCHEMY_DATABASE_URI='sqlite:///' + os.path.join(basedir, 'app.db')
 	SQLALCHEMY_TRACK_MODIFICATIONS=False
-	JWT_EXPIRATION_DELTA=datetime.timedelta(hours=2)
+	JWT_EXPIRATION_DELTA=datetime.timedelta(weeks=2)
